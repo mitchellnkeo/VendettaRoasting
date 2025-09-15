@@ -4,7 +4,7 @@ A modern coffee roasting website built with **React + TypeScript + Next.js**, fe
 
 ---
 
-## 🚀 Tech Stack
+## Tech Stack
 
 - **Frontend Framework**: [Next.js](https://nextjs.org/) (React + TypeScript)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
@@ -20,7 +20,7 @@ A modern coffee roasting website built with **React + TypeScript + Next.js**, fe
 
 ---
 
-## 📦 Core Features
+## Core Features
 
 ### 1. Customer-Facing Website
 - Product browsing (coffee beans, brewing gear, etc.)
@@ -46,7 +46,7 @@ A modern coffee roasting website built with **React + TypeScript + Next.js**, fe
 
 ---
 
-## 🔑 Key Business Rules
+## Key Business Rules
 
 - **Subscriptions**: Powered by Stripe Billing, supports recurring coffee deliveries.
 - **Wholesale Accounts**:
