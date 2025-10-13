@@ -28,11 +28,26 @@ To run this project locally:
 # Install dependencies
 npm install
 
+# Set up environment variables
+# Create a .env.local file in the root directory with the following:
+# NEXTAUTH_URL=http://localhost:3000
+# NEXTAUTH_SECRET=your-secret-key-change-in-production
+
 # Run development server
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to see the result.
+
+### Admin Access
+
+The admin dashboard is available at [http://localhost:3000/admin](http://localhost:3000/admin)
+
+Default admin credentials:
+- Email: admin@vendettaroasting.com
+- Password: admin123
+
+**Note:** In production, you should change these credentials and use a secure database for user management.
 
 ## Project Status
 
