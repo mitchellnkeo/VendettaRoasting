@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --max-width: 1100px;
   --border-radius: 12px;
@@ -8,8 +12,6 @@
 
 * {
   box-sizing: border-box;
-  padding: 0;
-  margin: 0;
 }
 
 html,
@@ -19,8 +21,8 @@ body {
 }
 
 body {
-  color: #3a2618;
-  background: #f9f5f0;
+  color: theme('colors.coffee.DEFAULT');
+  background: theme('colors.cream.light');
 }
 
 a {
