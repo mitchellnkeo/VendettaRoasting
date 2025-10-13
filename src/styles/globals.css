@@ -21,8 +21,8 @@ body {
 }
 
 body {
-  color: theme('colors.coffee.DEFAULT');
-  background: theme('colors.cream.light');
+  color: #3a2618;
+  background: #f9f5f0;
 }
 
 a {
