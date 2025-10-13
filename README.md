@@ -2,6 +2,24 @@
 
 A modern coffee roasting website built with **React + TypeScript + Next.js**, featuring e-commerce, subscriptions, reviews, events, and wholesale ordering. This project is the rebuild of [vendettaroasting.com](https://vendettaroasting.com/) from scratch.
 
+## Deployment
+
+This project is configured for deployment on Vercel:
+
+1. Push your code to a GitHub repository
+2. Import the project in the [Vercel Dashboard](https://vercel.com/new)
+3. Vercel will automatically detect it as a Next.js project
+4. Deploy and enjoy your live site!
+
+Alternatively, you can deploy from the command line:
+```bash
+# Install Vercel CLI
+npm install -g vercel
+
+# Deploy to Vercel
+vercel
+```
+
 ---
 
 ## Tech Stack
