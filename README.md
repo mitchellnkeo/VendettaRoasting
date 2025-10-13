@@ -20,6 +20,27 @@ npm install -g vercel
 vercel
 ```
 
+## Getting Started
+
+To run this project locally:
+
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser to see the result.
+
+## Project Status
+
+- ✅ Basic website structure and UI
+- ✅ Homepage, shop, subscriptions, and wholesale pages
+- ✅ Responsive design with Tailwind CSS
+- ✅ Deployed to Vercel
+
 ---
 
 ## Tech Stack
@@ -76,3 +97,67 @@ vercel
 - **Announcements & Events**:
   - Editable via Sanity CMS.
   - Display upcoming coffee events, collaborations, or special roasts.
+
+---
+
+## Development Roadmap
+
+### Authentication & User Management
+- [ ] Set up NextAuth.js for authentication
+  - [ ] Configure OAuth providers (Google, Facebook)
+  - [ ] Implement email/password authentication
+  - [ ] Create protected routes for user accounts
+
+### Content Management
+- [ ] Integrate Sanity CMS
+  - [ ] Set up Sanity Studio for content editing
+  - [ ] Create schemas for announcements, events, and FAQs
+  - [ ] Build API endpoints to fetch CMS content
+
+### Database & Backend
+- [ ] Set up database connection
+  - [ ] Configure PostgreSQL with Supabase or Neon
+  - [ ] Create database schema for products, users, orders
+  - [ ] Implement API routes for data access
+
+### E-Commerce Features
+- [ ] Implement shopping cart functionality
+  - [ ] Build cart context/state management
+  - [ ] Create add/remove/update cart item functions
+  - [ ] Add persistent cart storage
+
+- [ ] Create product detail pages
+  - [ ] Build dynamic routing for product pages
+  - [ ] Add product image galleries
+  - [ ] Implement reviews section
+
+- [ ] Build checkout flow
+  - [ ] Integrate Stripe for payments
+  - [ ] Create order summary page
+  - [ ] Implement shipping options
+  - [ ] Add order confirmation emails
+
+### User Features
+- [ ] Develop user account dashboard
+  - [ ] Order history
+  - [ ] Saved addresses
+  - [ ] Account settings
+
+- [ ] Implement subscription management
+  - [ ] Stripe Billing integration
+  - [ ] Subscription modification UI
+  - [ ] Delivery schedule management
+
+### Wholesale Portal
+- [ ] Complete wholesale features
+  - [ ] Wholesale-only pricing
+  - [ ] Bulk ordering options
+  - [ ] Account approval workflow
+  - [ ] Seattle-area shipping restrictions
+
+### Admin Interface
+- [ ] Build admin dashboard
+  - [ ] Order management
+  - [ ] Inventory control
+  - [ ] User management
+  - [ ] Review moderation
