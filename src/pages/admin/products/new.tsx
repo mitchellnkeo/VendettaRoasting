@@ -4,12 +4,14 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { Category } from '../../../types/product'
 import AdminLayout from '../../../components/admin/AdminLayout'
+import ImageUpload from '../../../components/ImageUpload'
 
 export default function NewProduct() {
   const router = useRouter()
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [uploadedImages, setUploadedImages] = useState<Array<{ url: string; pathname: string; isPrimary: boolean }>>([])
   
   const [formData, setFormData] = useState({
     name: '',
@@ -79,6 +81,25 @@ export default function NewProduct() {
     }))
   }
 
+  const handleImageUpload = (url: string, pathname: string) => {
+    const newImage = { url, pathname, isPrimary: uploadedImages.length === 0 }
+    setUploadedImages(prev => [...prev, newImage])
+  }
+
+  const handleImageError = (error: string) => {
+    setError(error)
+  }
+
+  const removeImage = (index: number) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const setPrimaryImage = (index: number) => {
+    setUploadedImages(prev => 
+      prev.map((img, i) => ({ ...img, isPrimary: i === index }))
+    )
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -86,7 +107,7 @@ export default function NewProduct() {
 
     try {
       // TODO: Implement API call to create product
-      console.log('Creating product:', formData)
+      console.log('Creating product:', { ...formData, images: uploadedImages })
       alert('Product creation functionality will be implemented with database connection')
       
       // For now, just redirect back to products list
@@ -349,6 +370,63 @@ export default function NewProduct() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-coffee"
                 />
               </div>
+            </div>
+
+            {/* Product Images */}
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h2 className="text-lg font-medium text-coffee-dark mb-4">Product Images</h2>
+              
+              {/* Upload Area */}
+              <div className="mb-6">
+                <ImageUpload
+                  onUpload={handleImageUpload}
+                  onError={handleImageError}
+                  className="mb-4"
+                />
+              </div>
+
+              {/* Uploaded Images */}
+              {uploadedImages.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium text-coffee-dark">Uploaded Images</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {uploadedImages.map((image, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={image.url}
+                          alt={`Product image ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => setPrimaryImage(index)}
+                            className={`px-2 py-1 text-xs rounded ${
+                              image.isPrimary
+                                ? 'bg-coffee text-cream-light'
+                                : 'bg-white text-coffee hover:bg-coffee hover:text-cream-light'
+                            }`}
+                          >
+                            {image.isPrimary ? 'Primary' : 'Set Primary'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        {image.isPrimary && (
+                          <div className="absolute top-2 left-2 bg-coffee text-cream-light px-2 py-1 text-xs rounded">
+                            Primary
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Status */}
