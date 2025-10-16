@@ -1,68 +1,54 @@
 import Head from 'next/head'
-import { useState } from 'react'
-
-// Mock product data
-const MOCK_PRODUCTS = [
-  {
-    id: '1',
-    name: 'Ethiopian Yirgacheffe',
-    description: 'Bright and fruity with notes of citrus and berries.',
-    price: 18.99,
-    category: 'Single Origin',
-    image: '/images/placeholder.jpg'
-  },
-  {
-    id: '2',
-    name: 'Colombian Supremo',
-    description: 'Medium bodied with notes of caramel and nuts.',
-    price: 17.99,
-    category: 'Single Origin',
-    image: '/images/placeholder.jpg'
-  },
-  {
-    id: '3',
-    name: 'Morning Blend',
-    description: 'Smooth and balanced with chocolate notes.',
-    price: 16.99,
-    category: 'Blend',
-    image: '/images/placeholder.jpg'
-  },
-  {
-    id: '4',
-    name: 'Espresso Roast',
-    description: 'Dark and rich with a smooth finish.',
-    price: 18.99,
-    category: 'Blend',
-    image: '/images/placeholder.jpg'
-  },
-  {
-    id: '5',
-    name: 'Decaf House Blend',
-    description: 'All the flavor without the caffeine.',
-    price: 19.99,
-    category: 'Decaf',
-    image: '/images/placeholder.jpg'
-  },
-  {
-    id: '6',
-    name: 'Sumatra Mandheling',
-    description: 'Earthy and full-bodied with herbal notes.',
-    price: 20.99,
-    category: 'Single Origin',
-    image: '/images/placeholder.jpg'
-  }
-];
-
-// Categories for filtering
-const CATEGORIES = ['All', 'Single Origin', 'Blend', 'Decaf'];
+import { useState, useEffect } from 'react'
+import { Product, Category } from '../../types/product'
 
 export default function Shop() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
-  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch products and categories on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch products
+        const productsResponse = await fetch('/api/products');
+        const productsData = await productsResponse.json();
+        
+        if (productsData.success) {
+          setProducts(productsData.data);
+        } else {
+          throw new Error(productsData.message || 'Failed to fetch products');
+        }
+
+        // Fetch categories
+        const categoriesResponse = await fetch('/api/categories');
+        const categoriesData = await categoriesResponse.json();
+        
+        if (categoriesData.success) {
+          setCategories(categoriesData.data);
+        } else {
+          throw new Error(categoriesData.message || 'Failed to fetch categories');
+        }
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   // Filter products based on selected category
   const filteredProducts = selectedCategory === 'All' 
-    ? MOCK_PRODUCTS 
-    : MOCK_PRODUCTS.filter(product => product.category === selectedCategory);
+    ? products 
+    : products.filter(product => product.category_name === selectedCategory);
 
   return (
     <>
@@ -84,44 +70,83 @@ export default function Shop() {
 
           {/* Category Filter */}
           <div className="flex flex-wrap justify-center gap-2 mb-8">
-            {CATEGORIES.map((category) => (
+            <button
+              onClick={() => setSelectedCategory('All')}
+              className={`px-4 py-2 rounded-full ${
+                selectedCategory === 'All'
+                  ? 'bg-coffee text-cream-light'
+                  : 'bg-cream text-coffee hover:bg-coffee-light hover:text-cream-light'
+              } transition-colors`}
+            >
+              All
+            </button>
+            {categories.map((category) => (
               <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
+                key={category.id}
+                onClick={() => setSelectedCategory(category.name)}
                 className={`px-4 py-2 rounded-full ${
-                  selectedCategory === category
+                  selectedCategory === category.name
                     ? 'bg-coffee text-cream-light'
                     : 'bg-cream text-coffee hover:bg-coffee-light hover:text-cream-light'
                 } transition-colors`}
               >
-                {category}
+                {category.name}
               </button>
             ))}
           </div>
 
+          {/* Loading State */}
+          {loading && (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-coffee"></div>
+              <p className="mt-4 text-coffee">Loading products...</p>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="text-center py-12">
+              <p className="text-red-600 mb-4">Error: {error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="bg-coffee text-cream-light px-4 py-2 rounded-md hover:bg-coffee-light transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+
           {/* Products Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProducts.map((product) => (
-              <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="h-64 bg-gray-200"></div>
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-2">
-                    <h2 className="text-xl font-semibold text-coffee-dark">{product.name}</h2>
-                    <span className="bg-cream px-2 py-1 text-xs rounded-full text-coffee">
-                      {product.category}
-                    </span>
-                  </div>
-                  <p className="text-coffee mb-4">{product.description}</p>
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold text-coffee-dark">${product.price.toFixed(2)}</span>
-                    <button className="bg-coffee hover:bg-coffee-light text-cream-light px-4 py-2 rounded-md transition-colors">
-                      Add to Cart
-                    </button>
-                  </div>
+          {!loading && !error && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredProducts.length === 0 ? (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-coffee">No products found in this category.</p>
                 </div>
-              </div>
-            ))}
-          </div>
+              ) : (
+                filteredProducts.map((product) => (
+                  <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div className="h-64 bg-gray-200"></div>
+                    <div className="p-6">
+                      <div className="flex justify-between items-start mb-2">
+                        <h2 className="text-xl font-semibold text-coffee-dark">{product.name}</h2>
+                        <span className="bg-cream px-2 py-1 text-xs rounded-full text-coffee">
+                          {product.category_name}
+                        </span>
+                      </div>
+                      <p className="text-coffee mb-4">{product.description}</p>
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-bold text-coffee-dark">${product.price.toFixed(2)}</span>
+                        <button className="bg-coffee hover:bg-coffee-light text-cream-light px-4 py-2 rounded-md transition-colors">
+                          Add to Cart
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
       </div>
     </>
