@@ -42,6 +42,8 @@ export default function ProductImage({
         className="object-cover"
         priority={priority}
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        // Handle both blob URLs and regular URLs
+        unoptimized={primaryImage.image_url.includes('blob.vercel-storage.com')}
       />
     </div>
   )
