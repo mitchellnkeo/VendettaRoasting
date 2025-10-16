@@ -1,5 +1,6 @@
 import Head from 'next/head'
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Product, Category } from '../../types/product'
 
 export default function Shop() {
@@ -125,11 +126,17 @@ export default function Shop() {
                 </div>
               ) : (
                 filteredProducts.map((product) => (
-                  <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div className="h-64 bg-gray-200"></div>
+                  <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                    <Link href={`/shop/${product.slug}`}>
+                      <div className="h-64 bg-gray-200 cursor-pointer"></div>
+                    </Link>
                     <div className="p-6">
                       <div className="flex justify-between items-start mb-2">
-                        <h2 className="text-xl font-semibold text-coffee-dark">{product.name}</h2>
+                        <Link href={`/shop/${product.slug}`}>
+                          <h2 className="text-xl font-semibold text-coffee-dark hover:text-coffee-light cursor-pointer">
+                            {product.name}
+                          </h2>
+                        </Link>
                         <span className="bg-cream px-2 py-1 text-xs rounded-full text-coffee">
                           {product.category_name}
                         </span>
