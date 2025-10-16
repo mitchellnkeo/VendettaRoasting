@@ -37,9 +37,9 @@
 - [X] Test that the app still runs with new environment variables
 
 ### **Step 1.2: Database Schema Design**
-- [ ] Design database tables (users, products, orders, reviews, etc.)
-- [ ] Create SQL migration files
-- [ ] Set up database connection utility
+- [X] Design database tables (users, products, orders, reviews, etc.)
+- [X] Create SQL migration files
+- [X] Set up database connection utility
 
 ### **Step 1.3: Basic Database Integration**
 - [ ] Install and configure database client (Prisma or similar)
