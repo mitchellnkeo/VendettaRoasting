@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { Product } from '../../types/product'
+import ProductImage from '../../components/ProductImage'
 
 export default function ProductDetail() {
   const router = useRouter()
@@ -114,8 +115,13 @@ export default function ProductDetail() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Product Image */}
             <div>
-              <div className="bg-gray-200 h-96 lg:h-[500px] rounded-lg"></div>
-              {/* TODO: Add image gallery when images are implemented */}
+              <ProductImage 
+                productId={product.id}
+                className="h-96 lg:h-[500px] rounded-lg"
+                alt={product.name}
+                priority={true}
+              />
+              {/* TODO: Add image gallery when multiple images are implemented */}
             </div>
 
             {/* Product Details */}

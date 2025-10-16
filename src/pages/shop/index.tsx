@@ -2,6 +2,7 @@ import Head from 'next/head'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Product, Category } from '../../types/product'
+import ProductImage from '../../components/ProductImage'
 
 export default function Shop() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -128,7 +129,11 @@ export default function Shop() {
                 filteredProducts.map((product) => (
                   <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                     <Link href={`/shop/${product.slug}`}>
-                      <div className="h-64 bg-gray-200 cursor-pointer"></div>
+                      <ProductImage 
+                        productId={product.id}
+                        className="h-64 cursor-pointer"
+                        alt={product.name}
+                      />
                     </Link>
                     <div className="p-6">
                       <div className="flex justify-between items-start mb-2">
