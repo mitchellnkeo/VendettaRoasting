@@ -32,9 +32,9 @@
 *Small, incremental steps to establish the data layer*
 
 ### **Step 1.1: Environment Setup**
-- [ ] Create `.env.local` file with database credentials
-- [ ] Add environment variables for NextAuth, database, and future services
-- [ ] Test that the app still runs with new environment variables
+- [X] Create `.env.local` file with database credentials
+- [X] Add environment variables for NextAuth, database, and future services
+- [X] Test that the app still runs with new environment variables
 
 ### **Step 1.2: Database Schema Design**
 - [ ] Design database tables (users, products, orders, reviews, etc.)
