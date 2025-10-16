@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@types/pg": "^8.15.5",
+    "@vercel/blob": "^2.0.0",
     "next": "^14.1.0",
     "next-auth": "^4.24.11",
     "pg": "^8.16.3",
