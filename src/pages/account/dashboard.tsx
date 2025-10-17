@@ -1,6 +1,7 @@
 import Head from 'next/head'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import ProtectedRoute from '../../../components/ProtectedRoute'
 
 export default function UserDashboard() {
   const [user, setUser] = useState({
@@ -53,7 +54,7 @@ export default function UserDashboard() {
   }
 
   return (
-    <>
+    <ProtectedRoute>
       <Head>
         <title>Dashboard | Vendetta Roasting</title>
         <meta name="description" content="Your Vendetta Roasting account dashboard" />
@@ -212,6 +213,6 @@ export default function UserDashboard() {
           </div>
         </div>
       </div>
-    </>
+    </ProtectedRoute>
   )
 }
