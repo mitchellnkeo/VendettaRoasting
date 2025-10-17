@@ -38,7 +38,16 @@ const Header = () => {
           </nav>
 
           {/* Cart and Account Links */}
-          <div className="hidden md:flex items-center">
+          <div className="hidden md:flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <Link href="/login" className="text-sm text-coffee hover:text-coffee-dark">
+                Sign In
+              </Link>
+              <span className="text-coffee">|</span>
+              <Link href="/register" className="text-sm text-coffee hover:text-coffee-dark">
+                Register
+              </Link>
+            </div>
             <Link href="/account" className="p-2 text-coffee hover:text-coffee-dark">
               <span className="sr-only">Account</span>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -94,6 +103,14 @@ const Header = () => {
             <Link href="/about" className="block pl-3 pr-4 py-2 text-base font-medium text-coffee hover:bg-cream">
               About
             </Link>
+            <div className="border-t border-coffee-light pt-2 mt-2">
+              <Link href="/login" className="block pl-3 pr-4 py-2 text-base font-medium text-coffee hover:bg-cream">
+                Sign In
+              </Link>
+              <Link href="/register" className="block pl-3 pr-4 py-2 text-base font-medium text-coffee hover:bg-cream">
+                Register
+              </Link>
+            </div>
             <div className="flex space-x-4 pl-3 pr-4 py-2">
               <Link href="/account" className="text-coffee hover:text-coffee-dark">
                 <span className="sr-only">Account</span>
