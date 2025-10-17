@@ -50,13 +50,25 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
     setLoading(true)
     
     try {
-      // TODO: Implement API call to login user
-      console.log('Logging in user:', formData)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      onSuccess?.()
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed')
+      }
+
+      if (data.success) {
+        onSuccess?.()
+      } else {
+        throw new Error(data.message || 'Login failed')
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Login failed'
       onError?.(errorMessage)
