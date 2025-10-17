@@ -1,4 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import formidable from 'formidable';
+import fs from 'fs';
 import { uploadToBlob, validateFile } from '../../../lib/blob';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -15,11 +17,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Get the file from the request
-    const formData = await req.formData();
-    const file = formData.get('file') as File;
-    const productId = formData.get('productId') as string;
-    const isPrimary = formData.get('isPrimary') === 'true';
+    // Parse the form data using formidable
+    const form = formidable({
+      maxFileSize: 5 * 1024 * 1024, // 5MB
+      filter: ({ mimetype }) => {
+        return ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(mimetype || '');
+      }
+    });
+
+    const [fields, files] = await form.parse(req);
+    const file = Array.isArray(files.file) ? files.file[0] : files.file;
+    const productId = Array.isArray(fields.productId) ? fields.productId[0] : fields.productId;
+    const isPrimary = Array.isArray(fields.isPrimary) ? fields.isPrimary[0] === 'true' : fields.isPrimary === 'true';
 
     if (!file) {
       return res.status(400).json({
@@ -29,7 +38,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Validate file
-    const validation = validateFile(file);
+    const validation = validateFile({
+      size: file.size,
+      type: file.mimetype || 'application/octet-stream'
+    } as File);
+    
     if (!validation.valid) {
       return res.status(400).json({
         success: false,
@@ -39,11 +52,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Generate filename with product ID prefix if provided
     const filename = productId 
-      ? `${productId}-${file.name}`
-      : file.name;
+      ? `${productId}-${file.originalFilename || 'image'}`
+      : file.originalFilename || 'image';
+
+    // Read file buffer
+    const fileBuffer = fs.readFileSync(file.filepath);
+    const fileObj = new File([fileBuffer], file.originalFilename || 'image', {
+      type: file.mimetype || 'application/octet-stream'
+    });
 
     // Upload to Vercel Blob
-    const result = await uploadToBlob(file, filename);
+    const result = await uploadToBlob(fileObj, filename);
 
     // Return success response
     res.status(200).json({
@@ -51,9 +70,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       data: {
         url: result.url,
         pathname: result.pathname,
-        filename: file.name,
+        filename: file.originalFilename || 'image',
         size: file.size,
-        type: file.type,
+        type: file.mimetype || 'application/octet-stream',
         productId: productId || null,
         isPrimary: isPrimary || false
       }
@@ -69,7 +88,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-// Disable body parsing for file uploads
+// Configure API for file uploads
 export const config = {
   api: {
     bodyParser: false,
