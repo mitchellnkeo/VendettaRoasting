@@ -325,8 +325,7 @@ export default function AccountSettings() {
                 <div className="flex justify-end space-x-4">
                   <Link 
                     href="/account/dashboard"
-                    className="px-6 py-3 border border-coffee-light text-coffee rounded-md hover:bg-cream transition-colors"
-                    disabled={saving}
+                    className={`px-6 py-3 border border-coffee-light text-coffee rounded-md hover:bg-cream transition-colors ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     Cancel
                   </Link>
