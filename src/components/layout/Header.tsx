@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import { useState } from 'react';
+import { useAuth } from '../../lib/auth/AuthContext';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isAuthenticated, user, logout } = useAuth();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -39,15 +41,35 @@ const Header = () => {
 
           {/* Cart and Account Links */}
           <div className="hidden md:flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <Link href="/login" className="text-sm text-coffee hover:text-coffee-dark">
-                Sign In
-              </Link>
-              <span className="text-coffee">|</span>
-              <Link href="/register" className="text-sm text-coffee hover:text-coffee-dark">
-                Register
-              </Link>
-            </div>
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-3">
+                <span className="text-sm text-coffee">
+                  Welcome, {user?.firstName || 'User'}!
+                </span>
+                <div className="flex items-center space-x-2">
+                  <Link href="/account/dashboard" className="text-sm text-coffee hover:text-coffee-dark">
+                    Dashboard
+                  </Link>
+                  <span className="text-coffee">|</span>
+                  <button 
+                    onClick={logout}
+                    className="text-sm text-coffee hover:text-coffee-dark"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Link href="/login" className="text-sm text-coffee hover:text-coffee-dark">
+                  Sign In
+                </Link>
+                <span className="text-coffee">|</span>
+                <Link href="/register" className="text-sm text-coffee hover:text-coffee-dark">
+                  Register
+                </Link>
+              </div>
+            )}
             <Link href="/account" className="p-2 text-coffee hover:text-coffee-dark">
               <span className="sr-only">Account</span>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -104,12 +126,31 @@ const Header = () => {
               About
             </Link>
             <div className="border-t border-coffee-light pt-2 mt-2">
-              <Link href="/login" className="block pl-3 pr-4 py-2 text-base font-medium text-coffee hover:bg-cream">
-                Sign In
-              </Link>
-              <Link href="/register" className="block pl-3 pr-4 py-2 text-base font-medium text-coffee hover:bg-cream">
-                Register
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <div className="pl-3 pr-4 py-2 text-base font-medium text-coffee">
+                    Welcome, {user?.firstName || 'User'}!
+                  </div>
+                  <Link href="/account/dashboard" className="block pl-3 pr-4 py-2 text-base font-medium text-coffee hover:bg-cream">
+                    Dashboard
+                  </Link>
+                  <button 
+                    onClick={logout}
+                    className="block w-full text-left pl-3 pr-4 py-2 text-base font-medium text-coffee hover:bg-cream"
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" className="block pl-3 pr-4 py-2 text-base font-medium text-coffee hover:bg-cream">
+                    Sign In
+                  </Link>
+                  <Link href="/register" className="block pl-3 pr-4 py-2 text-base font-medium text-coffee hover:bg-cream">
+                    Register
+                  </Link>
+                </>
+              )}
             </div>
             <div className="flex space-x-4 pl-3 pr-4 py-2">
               <Link href="/account" className="text-coffee hover:text-coffee-dark">
