@@ -30,7 +30,7 @@ export default function ImageUpload({
       if (productId) formData.append('productId', productId)
       if (isPrimary) formData.append('isPrimary', 'true')
 
-      const response = await fetch('/api/upload/image', {
+      const response = await fetch('/api/upload/blob', {
         method: 'POST',
         body: formData,
       })
