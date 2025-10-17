@@ -67,13 +67,25 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
     setLoading(true)
     
     try {
-      // TODO: Implement API call to register user
-      console.log('Registering user:', formData)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      onSuccess?.()
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed')
+      }
+
+      if (data.success) {
+        onSuccess?.()
+      } else {
+        throw new Error(data.message || 'Registration failed')
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Registration failed'
       onError?.(errorMessage)
