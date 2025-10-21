@@ -13,6 +13,7 @@ export interface Product {
   origin?: string;
   roast_level?: string;
   flavor_notes?: string;
+  image_url?: string;
   is_active: boolean;
   is_featured: boolean;
   inventory_quantity: number;

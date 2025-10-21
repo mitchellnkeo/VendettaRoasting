@@ -58,7 +58,7 @@ export default function ProductDetail() {
           id: product.id,
           name: product.name,
           price: product.price,
-          image: product.image_url,
+          image: product.image_url || '/images/placeholder.jpg',
           slug: product.slug
         })
       }
