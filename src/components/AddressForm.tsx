@@ -104,8 +104,11 @@ const AddressForm = ({ onAddressChange, initialAddress = {}, className = '' }: A
   }
 
   const isFormValid = () => {
-    const requiredFields = ['firstName', 'lastName', 'address', 'city', 'state', 'zipCode']
-    return requiredFields.every(field => formData[field as keyof Address]?.trim())
+    const requiredFields: (keyof Address)[] = ['firstName', 'lastName', 'address', 'city', 'state', 'zipCode']
+    return requiredFields.every(field => {
+      const value = formData[field]
+      return typeof value === 'string' && value.trim().length > 0
+    })
   }
 
   return (
