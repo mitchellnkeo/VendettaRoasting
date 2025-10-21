@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Product, Category } from '../../types/product'
 import ProductImage from '../../components/ProductImage'
+import { useCart } from '../../lib/cart/CartContext'
 
 export default function Shop() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -10,6 +11,10 @@ export default function Shop() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [addingToCart, setAddingToCart] = useState<string | null>(null);
+  const [cartMessage, setCartMessage] = useState<string | null>(null);
+  
+  const { addItem } = useCart();
 
   // Fetch products and categories on component mount
   useEffect(() => {
@@ -51,6 +56,35 @@ export default function Shop() {
   const filteredProducts = selectedCategory === 'All' 
     ? products 
     : products.filter(product => product.category_name === selectedCategory);
+
+  // Handle adding item to cart
+  const handleAddToCart = async (product: Product) => {
+    setAddingToCart(product.id);
+    setCartMessage(null);
+
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Add item to cart
+      addItem({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image_url || '/images/placeholder.jpg',
+        slug: product.slug
+      });
+
+      setCartMessage(`Added ${product.name} to cart!`);
+
+      // Clear message after 3 seconds
+      setTimeout(() => setCartMessage(null), 3000);
+    } catch (error) {
+      setCartMessage('Failed to add item to cart. Please try again.');
+    } finally {
+      setAddingToCart(null);
+    }
+  };
 
   return (
     <>
@@ -118,6 +152,17 @@ export default function Shop() {
             </div>
           )}
 
+          {/* Cart Message */}
+          {cartMessage && (
+            <div className={`mb-6 p-4 rounded-md ${
+              cartMessage.includes('Added')
+                ? 'bg-green-50 border border-green-200 text-green-800'
+                : 'bg-red-50 border border-red-200 text-red-800'
+            }`}>
+              {cartMessage}
+            </div>
+          )}
+
           {/* Products Grid */}
           {!loading && !error && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -149,8 +194,23 @@ export default function Shop() {
                       <p className="text-coffee mb-4">{product.description}</p>
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-bold text-coffee-dark">${product.price.toFixed(2)}</span>
-                        <button className="bg-coffee hover:bg-coffee-light text-cream-light px-4 py-2 rounded-md transition-colors">
-                          Add to Cart
+                        <button 
+                          onClick={() => handleAddToCart(product)}
+                          disabled={addingToCart === product.id}
+                          className={`px-4 py-2 rounded-md transition-colors ${
+                            addingToCart === product.id
+                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                              : 'bg-coffee hover:bg-coffee-light text-cream-light'
+                          }`}
+                        >
+                          {addingToCart === product.id ? (
+                            <div className="flex items-center">
+                              <div className="w-4 h-4 border-2 border-cream-light border-t-transparent rounded-full animate-spin mr-2" />
+                              Adding...
+                            </div>
+                          ) : (
+                            'Add to Cart'
+                          )}
                         </button>
                       </div>
                     </div>
