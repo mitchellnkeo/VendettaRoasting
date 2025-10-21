@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { ProductService } from '../../../lib/services/productService';
+import { MOCK_PRODUCTS } from '../../../lib/mockData';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -16,7 +16,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const product = await ProductService.getProductBySlug(slug);
+    // Find product by slug in mock data
+    const product = MOCK_PRODUCTS.find(p => p.slug === slug);
     
     if (!product) {
       return res.status(404).json({

@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { ProductService } from '../../../lib/services/productService';
+import { MOCK_CATEGORIES } from '../../../lib/mockData';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -7,7 +7,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const categories = await ProductService.getCategories();
+    // For now, return mock categories
+    const categories = MOCK_CATEGORIES;
     
     res.status(200).json({
       success: true,

@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { ProductService } from '../../../lib/services/productService';
+import { MOCK_PRODUCTS } from '../../../lib/mockData';
 import { ProductFilters } from '../../../types/product';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -32,7 +32,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       offset: offset ? parseInt(offset as string) : undefined
     };
 
-    const products = await ProductService.getProducts(filters);
+    // For now, return mock products (filtering will be implemented later)
+    const products = MOCK_PRODUCTS;
     
     res.status(200).json({
       success: true,
