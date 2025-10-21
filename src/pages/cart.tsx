@@ -5,7 +5,8 @@ import { useCart } from '../lib/cart/CartContext'
 import { useState, useEffect } from 'react'
 
 export default function Cart() {
-  const { items, totalItems, totalPrice, removeItem, updateQuantity, clearCart } = useCart()
+  const { state, removeItem, updateQuantity, clearCart } = useCart()
+  const { items, itemCount: totalItems, total: totalPrice } = state
   const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
@@ -83,7 +84,7 @@ export default function Cart() {
                     </div>
                     
                     <div className="divide-y divide-gray-200">
-                      {items.map((item) => (
+                      {items.map((item: any) => (
                         <div key={item.id} className="p-6">
                           <div className="flex items-center space-x-4">
                             {/* Product Image */}
