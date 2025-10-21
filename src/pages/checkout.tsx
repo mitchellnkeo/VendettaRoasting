@@ -2,6 +2,8 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { useCart } from '../lib/cart/CartContext'
 import OrderSummary from '../components/OrderSummary'
+import AddressForm from '../components/AddressForm'
+import SavedAddresses from '../components/SavedAddresses'
 import { useState, useEffect } from 'react'
 
 export default function Checkout() {
@@ -12,6 +14,11 @@ export default function Checkout() {
   // Form state
   const [formData, setFormData] = useState({
     email: '',
+    shippingMethod: 'standard'
+  })
+  
+  // Address state
+  const [shippingAddress, setShippingAddress] = useState({
     firstName: '',
     lastName: '',
     address: '',
@@ -19,9 +26,10 @@ export default function Checkout() {
     state: '',
     zipCode: '',
     country: 'US',
-    phone: '',
-    shippingMethod: 'standard'
+    phone: ''
   })
+  
+  const [useSavedAddress, setUseSavedAddress] = useState(false)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -35,6 +43,15 @@ export default function Checkout() {
       ...prev,
       [name]: value
     }))
+  }
+
+  const handleAddressChange = (address: any) => {
+    setShippingAddress(address)
+  }
+
+  const handleSavedAddressSelect = (address: any) => {
+    setShippingAddress(address)
+    setUseSavedAddress(true)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -147,98 +164,46 @@ export default function Checkout() {
                   {/* Shipping Information */}
                   <div className="bg-white rounded-lg shadow-sm p-6">
                     <h2 className="text-xl font-semibold text-coffee-dark mb-4">Shipping Information</h2>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label htmlFor="firstName" className="block text-sm font-medium text-coffee-dark mb-1">
-                            First Name *
-                          </label>
-                          <input
-                            type="text"
-                            id="firstName"
-                            name="firstName"
-                            required
-                            value={formData.firstName}
-                            onChange={handleInputChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-coffee"
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="lastName" className="block text-sm font-medium text-coffee-dark mb-1">
-                            Last Name *
-                          </label>
-                          <input
-                            type="text"
-                            id="lastName"
-                            name="lastName"
-                            required
-                            value={formData.lastName}
-                            onChange={handleInputChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-coffee"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <label htmlFor="address" className="block text-sm font-medium text-coffee-dark mb-1">
-                          Street Address *
-                        </label>
-                        <input
-                          type="text"
-                          id="address"
-                          name="address"
-                          required
-                          value={formData.address}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-coffee"
-                        />
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <label htmlFor="city" className="block text-sm font-medium text-coffee-dark mb-1">
-                            City *
-                          </label>
-                          <input
-                            type="text"
-                            id="city"
-                            name="city"
-                            required
-                            value={formData.city}
-                            onChange={handleInputChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-coffee"
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="state" className="block text-sm font-medium text-coffee-dark mb-1">
-                            State *
-                          </label>
-                          <input
-                            type="text"
-                            id="state"
-                            name="state"
-                            required
-                            value={formData.state}
-                            onChange={handleInputChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-coffee"
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="zipCode" className="block text-sm font-medium text-coffee-dark mb-1">
-                            ZIP Code *
-                          </label>
-                          <input
-                            type="text"
-                            id="zipCode"
-                            name="zipCode"
-                            required
-                            value={formData.zipCode}
-                            onChange={handleInputChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-coffee"
-                          />
-                        </div>
+                    
+                    {/* Address Options */}
+                    <div className="mb-6">
+                      <div className="flex space-x-4 mb-4">
+                        <button
+                          type="button"
+                          onClick={() => setUseSavedAddress(false)}
+                          className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                            !useSavedAddress
+                              ? 'bg-coffee text-cream-light'
+                              : 'bg-gray-100 text-coffee-dark hover:bg-gray-200'
+                          }`}
+                        >
+                          New Address
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setUseSavedAddress(true)}
+                          className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                            useSavedAddress
+                              ? 'bg-coffee text-cream-light'
+                              : 'bg-gray-100 text-coffee-dark hover:bg-gray-200'
+                          }`}
+                        >
+                          Saved Addresses
+                        </button>
                       </div>
                     </div>
+
+                    {/* Address Form or Saved Addresses */}
+                    {!useSavedAddress ? (
+                      <AddressForm
+                        onAddressChange={handleAddressChange}
+                        initialAddress={shippingAddress}
+                      />
+                    ) : (
+                      <SavedAddresses
+                        onAddressSelect={handleSavedAddressSelect}
+                      />
+                    )}
                   </div>
 
                   {/* Shipping Method */}
