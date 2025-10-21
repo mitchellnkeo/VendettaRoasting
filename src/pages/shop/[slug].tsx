@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { Product } from '../../types/product'
 import ProductImage from '../../components/ProductImage'
+import { useCart } from '../../lib/cart/CartContext'
 
 export default function ProductDetail() {
   const router = useRouter()
@@ -12,6 +13,9 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [quantity, setQuantity] = useState(1)
+  const [addingToCart, setAddingToCart] = useState(false)
+  const [cartMessage, setCartMessage] = useState<string | null>(null)
+  const { addItem } = useCart()
 
   useEffect(() => {
     if (!slug) return
@@ -38,10 +42,36 @@ export default function ProductDetail() {
     fetchProduct()
   }, [slug])
 
-  const handleAddToCart = () => {
-    // TODO: Implement cart functionality
-    console.log('Add to cart:', { product: product?.id, quantity })
-    alert(`Added ${quantity} ${product?.name} to cart!`)
+  const handleAddToCart = async () => {
+    if (!product) return
+
+    setAddingToCart(true)
+    setCartMessage(null)
+
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      // Add item to cart
+      for (let i = 0; i < quantity; i++) {
+        addItem({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.image_url,
+          slug: product.slug
+        })
+      }
+
+      setCartMessage(`Added ${quantity} ${quantity === 1 ? 'item' : 'items'} to cart!`)
+      
+      // Clear message after 3 seconds
+      setTimeout(() => setCartMessage(null), 3000)
+    } catch (error) {
+      setCartMessage('Failed to add item to cart. Please try again.')
+    } finally {
+      setAddingToCart(false)
+    }
   }
 
   if (loading) {
@@ -216,16 +246,36 @@ export default function ProductDetail() {
                   </select>
                 </div>
 
+                {/* Success/Error Message */}
+                {cartMessage && (
+                  <div className={`mb-4 p-3 rounded-md ${
+                    cartMessage.includes('Added') 
+                      ? 'bg-green-50 border border-green-200 text-green-800'
+                      : 'bg-red-50 border border-red-200 text-red-800'
+                  }`}>
+                    {cartMessage}
+                  </div>
+                )}
+
                 <button
                   onClick={handleAddToCart}
-                  disabled={product.inventory_quantity === 0}
+                  disabled={product.inventory_quantity === 0 || addingToCart}
                   className={`w-full py-3 px-6 rounded-md font-medium transition-colors ${
-                    product.inventory_quantity > 0
+                    product.inventory_quantity > 0 && !addingToCart
                       ? 'bg-coffee text-cream-light hover:bg-coffee-light'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
                 >
-                  {product.inventory_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}
+                  {addingToCart ? (
+                    <div className="flex items-center justify-center">
+                      <div className="w-5 h-5 border-2 border-cream-light border-t-transparent rounded-full animate-spin mr-2" />
+                      Adding to Cart...
+                    </div>
+                  ) : product.inventory_quantity > 0 ? (
+                    'Add to Cart'
+                  ) : (
+                    'Out of Stock'
+                  )}
                 </button>
               </div>
             </div>
