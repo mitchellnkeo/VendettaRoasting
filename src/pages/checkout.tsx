@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useCart } from '../lib/cart/CartContext'
+import OrderSummary from '../components/OrderSummary'
 import { useState, useEffect } from 'react'
 
 export default function Checkout() {
@@ -305,56 +305,14 @@ export default function Checkout() {
 
               {/* Order Summary */}
               <div className="lg:col-span-1">
-                <div className="bg-white rounded-lg shadow-sm p-6 sticky top-4">
-                  <h2 className="text-lg font-semibold text-coffee-dark mb-4">Order Summary</h2>
-                  
-                  {/* Cart Items */}
-                  <div className="space-y-4 mb-6">
-                    {items.map((item: any) => (
-                      <div key={item.id} className="flex items-center space-x-3">
-                        <div className="relative w-12 h-12 flex-shrink-0">
-                          <Image
-                            src={item.image || '/images/placeholder.jpg'}
-                            alt={item.name}
-                            fill
-                            style={{ objectFit: 'cover' }}
-                            className="rounded-md"
-                            sizes="48px"
-                          />
-                        </div>
-                        <div className="flex-grow">
-                          <p className="font-medium text-coffee-dark text-sm">{item.name}</p>
-                          <p className="text-coffee text-sm">Qty: {item.quantity}</p>
-                        </div>
-                        <p className="font-semibold text-coffee-dark text-sm">
-                          ${(item.price * item.quantity).toFixed(2)}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Totals */}
-                  <div className="space-y-2 border-t border-gray-200 pt-4">
-                    <div className="flex justify-between text-coffee">
-                      <span>Subtotal ({totalItems} items)</span>
-                      <span>${totalPrice.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-coffee">
-                      <span>Shipping</span>
-                      <span>{formData.shippingMethod === 'express' ? '$9.99' : 'Free'}</span>
-                    </div>
-                    <div className="flex justify-between text-coffee">
-                      <span>Tax</span>
-                      <span>Calculated at payment</span>
-                    </div>
-                    <div className="border-t border-gray-200 pt-2">
-                      <div className="flex justify-between text-lg font-semibold text-coffee-dark">
-                        <span>Total</span>
-                        <span>${(totalPrice + (formData.shippingMethod === 'express' ? 9.99 : 0)).toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <OrderSummary
+                  items={items}
+                  totalItems={totalItems}
+                  totalPrice={totalPrice}
+                  shippingMethod={formData.shippingMethod}
+                  shippingCost={formData.shippingMethod === 'express' ? 9.99 : 0}
+                  className="sticky top-4"
+                />
               </div>
             </div>
           </div>
