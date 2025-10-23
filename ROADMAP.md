@@ -140,9 +140,9 @@ Phase 3 is essentially complete! The core user authentication and account manage
 
 ### **Step 4.3: Checkout Process** 🔄 **IN PROGRESS**
 - [X] Create checkout form
-- [ ] Add shipping address management
+- [X] Add shipping address management
 - [X] Implement order summary
-- [ ] Test checkout flow
+- [X] Test checkout flow
 
 ---
 
