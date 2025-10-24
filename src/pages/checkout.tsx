@@ -103,8 +103,7 @@ export default function Checkout() {
         setOrderId(result.data.orderId)
         setPaymentStep('success')
         
-        // Clear cart after successful order creation
-        clearCart()
+        // Don't clear cart here - let user see success page first
       } else {
         throw new Error(result.message || 'Failed to create order')
       }
@@ -437,10 +436,16 @@ export default function Checkout() {
                 <p className="text-coffee mb-4">Thank you for your order. We'll send you a confirmation email shortly.</p>
                 <p className="text-sm text-coffee mb-6">Order ID: {orderId}</p>
                 <div className="space-x-4">
-                  <Link href="/shop" className="inline-flex items-center px-6 py-3 bg-coffee text-cream-light rounded-md hover:bg-coffee-light transition-colors">
+                  <button 
+                    onClick={() => {
+                      clearCart()
+                      window.location.href = '/shop'
+                    }}
+                    className="inline-flex items-center px-6 py-3 bg-coffee text-cream-light rounded-md hover:bg-coffee-light transition-colors"
+                  >
                     Continue Shopping
-                  </Link>
-                  <Link href="/account/orders" className="inline-flex items-center px-6 py-3 border border-coffee text-coffee-dark rounded-md hover:bg-cream transition-colors">
+                  </button>
+                  <Link href="/orders" className="inline-flex items-center px-6 py-3 border border-coffee text-coffee-dark rounded-md hover:bg-cream transition-colors">
                     View Orders
                   </Link>
                 </div>
