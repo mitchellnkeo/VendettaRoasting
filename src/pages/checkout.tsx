@@ -4,6 +4,7 @@ import { useCart } from '../lib/cart/CartContext'
 import OrderSummary from '../components/OrderSummary'
 import AddressForm from '../components/AddressForm'
 import SavedAddresses from '../components/SavedAddresses'
+import PaymentForm from '../components/PaymentForm'
 import { useState, useEffect } from 'react'
 
 export default function Checkout() {
@@ -30,8 +31,12 @@ export default function Checkout() {
   })
   
   const [useSavedAddress, setUseSavedAddress] = useState(false)
-
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  // Payment state
+  const [paymentStep, setPaymentStep] = useState<'form' | 'payment' | 'processing' | 'success'>('form')
+  const [paymentError, setPaymentError] = useState<string | null>(null)
+  const [orderId, setOrderId] = useState<string | null>(null)
 
   useEffect(() => {
     setIsClient(true)
@@ -54,18 +59,40 @@ export default function Checkout() {
     setUseSavedAddress(true)
   }
 
+  const handlePaymentSuccess = (paymentIntent: any) => {
+    setPaymentStep('processing')
+    setPaymentError(null)
+    
+    // Simulate order processing
+    setTimeout(() => {
+      const newOrderId = `ORD-${Date.now()}`
+      setOrderId(newOrderId)
+      setPaymentStep('success')
+      
+      // Clear cart after successful payment
+      clearCart()
+    }, 2000)
+  }
+
+  const handlePaymentError = (error: string) => {
+    setPaymentError(error)
+    setPaymentStep('form')
+  }
+
+  const proceedToPayment = () => {
+    setPaymentStep('payment')
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    // Simulate form validation
+    await new Promise(resolve => setTimeout(resolve, 1000))
     
-    // TODO: Implement actual checkout logic
-    console.log('Checkout form submitted:', formData)
-    
+    // Proceed to payment step
+    setPaymentStep('payment')
     setIsSubmitting(false)
-    // TODO: Redirect to success page or payment
   }
 
   if (!isClient) {
@@ -123,9 +150,11 @@ export default function Checkout() {
               <p className="text-coffee-dark">Complete your order</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Checkout Form */}
-              <div className="lg:col-span-2">
+            {/* Payment Step Logic */}
+            {paymentStep === 'form' && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Checkout Form */}
+                <div className="lg:col-span-2">
                 <form onSubmit={handleSubmit} className="space-y-8">
                   {/* Contact Information */}
                   <div className="bg-white rounded-lg shadow-sm p-6">
@@ -266,20 +295,88 @@ export default function Checkout() {
                     </button>
                   </div>
                 </form>
-              </div>
+                </div>
 
-              {/* Order Summary */}
-              <div className="lg:col-span-1">
-                <OrderSummary
-                  items={items}
-                  totalItems={totalItems}
-                  totalPrice={totalPrice}
-                  shippingMethod={formData.shippingMethod}
-                  shippingCost={formData.shippingMethod === 'express' ? 9.99 : 0}
-                  className="sticky top-4"
-                />
+                {/* Order Summary */}
+                <div className="lg:col-span-1">
+                  <OrderSummary
+                    items={items}
+                    totalItems={totalItems}
+                    totalPrice={totalPrice}
+                    shippingMethod={formData.shippingMethod}
+                    shippingCost={formData.shippingMethod === 'express' ? 9.99 : 0}
+                    className="sticky top-4"
+                  />
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Payment Step */}
+            {paymentStep === 'payment' && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Payment Form */}
+                <div className="lg:col-span-2">
+                  <div className="bg-white rounded-lg shadow-sm p-6">
+                    <h2 className="text-xl font-semibold text-coffee-dark mb-4">Payment Information</h2>
+                    
+                    {paymentError && (
+                      <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+                        <p className="text-red-800">{paymentError}</p>
+                      </div>
+                    )}
+
+                    <PaymentForm
+                      amount={totalPrice + (formData.shippingMethod === 'express' ? 9.99 : 0)}
+                      onSuccess={handlePaymentSuccess}
+                      onError={handlePaymentError}
+                    />
+                  </div>
+                </div>
+
+                {/* Order Summary */}
+                <div className="lg:col-span-1">
+                  <OrderSummary
+                    items={items}
+                    totalItems={totalItems}
+                    totalPrice={totalPrice}
+                    shippingMethod={formData.shippingMethod}
+                    shippingCost={formData.shippingMethod === 'express' ? 9.99 : 0}
+                    className="sticky top-4"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Processing Step */}
+            {paymentStep === 'processing' && (
+              <div className="text-center py-12">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-coffee mb-4"></div>
+                <h2 className="text-2xl font-semibold text-coffee-dark mb-2">Processing Your Order</h2>
+                <p className="text-coffee">Please wait while we process your payment...</p>
+              </div>
+            )}
+
+            {/* Success Step */}
+            {paymentStep === 'success' && (
+              <div className="text-center py-12">
+                <div className="inline-block w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-semibold text-coffee-dark mb-2">Order Confirmed!</h2>
+                <p className="text-coffee mb-4">Thank you for your order. We'll send you a confirmation email shortly.</p>
+                <p className="text-sm text-coffee mb-6">Order ID: {orderId}</p>
+                <div className="space-x-4">
+                  <Link href="/shop" className="inline-flex items-center px-6 py-3 bg-coffee text-cream-light rounded-md hover:bg-coffee-light transition-colors">
+                    Continue Shopping
+                  </Link>
+                  <Link href="/account/orders" className="inline-flex items-center px-6 py-3 border border-coffee text-coffee-dark rounded-md hover:bg-cream transition-colors">
+                    View Orders
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
