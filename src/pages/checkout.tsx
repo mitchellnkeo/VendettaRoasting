@@ -59,19 +59,57 @@ export default function Checkout() {
     setUseSavedAddress(true)
   }
 
-  const handlePaymentSuccess = (paymentIntent: any) => {
+  const handlePaymentSuccess = async (paymentIntent: any) => {
     setPaymentStep('processing')
     setPaymentError(null)
     
-    // Simulate order processing
-    setTimeout(() => {
-      const newOrderId = `ORD-${Date.now()}`
-      setOrderId(newOrderId)
-      setPaymentStep('success')
-      
-      // Clear cart after successful payment
-      clearCart()
-    }, 2000)
+    try {
+      // Create order with payment intent
+      const orderData = {
+        paymentIntentId: paymentIntent.id,
+        items: items.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image
+        })),
+        shippingAddress,
+        customerInfo: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone
+        },
+        totalAmount: totalPrice + (formData.shippingMethod === 'express' ? 9.99 : 0),
+        shippingMethod: formData.shippingMethod,
+        shippingCost: formData.shippingMethod === 'express' ? 9.99 : 0
+      }
+
+      const response = await fetch('/api/orders/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData)
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setOrderId(result.data.orderId)
+        setPaymentStep('success')
+        
+        // Clear cart after successful order creation
+        clearCart()
+      } else {
+        throw new Error(result.message || 'Failed to create order')
+      }
+    } catch (error) {
+      console.error('Error creating order:', error)
+      setPaymentError('Failed to create order. Please contact support.')
+      setPaymentStep('form')
+    }
   }
 
   const handlePaymentError = (error: string) => {
