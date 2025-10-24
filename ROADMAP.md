@@ -224,7 +224,7 @@ Phase 3 is essentially complete! The core user authentication and account manage
 ## **Phase 6: Subscription System**
 *Build the recurring subscription functionality*
 
-### **Step 6.1: Stripe Billing Setup**
+### **Step 6.1: Stripe Billing Setup** 🔄 **IN PROGRESS**
 - [ ] Configure Stripe Billing
 - [ ] Create subscription plans
 - [ ] Implement subscription management
