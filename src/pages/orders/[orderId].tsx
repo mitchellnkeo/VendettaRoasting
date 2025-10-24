@@ -44,6 +44,7 @@ interface Order {
   tracking?: {
     status: string
     estimatedDelivery: string
+    trackingNumber?: string
     history: Array<{
       status: string
       timestamp: string

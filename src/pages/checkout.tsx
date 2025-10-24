@@ -14,7 +14,10 @@ export default function Checkout() {
   
   // Form state
   const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
     email: '',
+    phone: '',
     shippingMethod: 'standard'
   })
   
@@ -199,6 +202,34 @@ export default function Checkout() {
                     <h2 className="text-xl font-semibold text-coffee-dark mb-4">Contact Information</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
+                        <label htmlFor="firstName" className="block text-sm font-medium text-coffee-dark mb-1">
+                          First Name *
+                        </label>
+                        <input
+                          type="text"
+                          id="firstName"
+                          name="firstName"
+                          required
+                          value={formData.firstName}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-coffee"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="lastName" className="block text-sm font-medium text-coffee-dark mb-1">
+                          Last Name *
+                        </label>
+                        <input
+                          type="text"
+                          id="lastName"
+                          name="lastName"
+                          required
+                          value={formData.lastName}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-coffee"
+                        />
+                      </div>
+                      <div>
                         <label htmlFor="email" className="block text-sm font-medium text-coffee-dark mb-1">
                           Email Address *
                         </label>
@@ -220,8 +251,8 @@ export default function Checkout() {
                           type="tel"
                           id="phone"
                           name="phone"
-                          value={shippingAddress.phone}
-                          onChange={(e) => setShippingAddress(prev => ({ ...prev, phone: e.target.value }))}
+                          value={formData.phone}
+                          onChange={handleInputChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-coffee"
                         />
                       </div>
