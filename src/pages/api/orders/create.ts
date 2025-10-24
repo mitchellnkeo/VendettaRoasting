@@ -79,6 +79,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // For now, we'll simulate order creation
     console.log('Order created:', order);
 
+    // Send confirmation email
+    try {
+      const emailResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/orders/send-confirmation`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderId: order.id,
+          customerEmail: order.customer.email,
+          customerName: `${order.customer.firstName} ${order.customer.lastName}`,
+          orderTotal: order.totals.total,
+          items: order.items
+        })
+      });
+
+      if (emailResponse.ok) {
+        console.log('✅ Confirmation email sent successfully');
+      } else {
+        console.log('⚠️ Failed to send confirmation email');
+      }
+    } catch (emailError) {
+      console.error('Email sending error:', emailError);
+      // Don't fail the order creation if email fails
+    }
+
     res.status(201).json({
       success: true,
       data: {
