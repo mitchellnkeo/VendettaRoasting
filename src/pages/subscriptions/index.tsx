@@ -1,49 +1,7 @@
 import Head from 'next/head'
-import { useState } from 'react'
-
-// Mock subscription plans
-const SUBSCRIPTION_PLANS = [
-  {
-    id: 'basic',
-    name: 'Coffee Lover',
-    price: 18.99,
-    description: 'Perfect for the casual coffee drinker',
-    features: [
-      '12oz bag of coffee',
-      'Delivered every 2 weeks',
-      'Choose from our signature blends',
-      'Free shipping'
-    ]
-  },
-  {
-    id: 'standard',
-    name: 'Coffee Enthusiast',
-    price: 34.99,
-    description: 'Our most popular subscription',
-    features: [
-      'Two 12oz bags of coffee',
-      'Delivered every 2 weeks',
-      'Choose from all our coffees',
-      'Free shipping',
-      'Early access to limited releases'
-    ],
-    popular: true
-  },
-  {
-    id: 'premium',
-    name: 'Coffee Connoisseur',
-    price: 49.99,
-    description: 'For the true coffee aficionado',
-    features: [
-      'Three 12oz bags of coffee',
-      'Delivered every 2 weeks',
-      'Choose from all our coffees including exclusives',
-      'Free shipping',
-      'Early access to limited releases',
-      'Free coffee brewing equipment quarterly'
-    ]
-  }
-];
+import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { SUBSCRIPTION_PLANS } from '../../lib/subscription'
 
 // Frequency options
 const FREQUENCY_OPTIONS = [
@@ -53,8 +11,31 @@ const FREQUENCY_OPTIONS = [
 ];
 
 export default function Subscriptions() {
-  const [selectedPlan, setSelectedPlan] = useState('standard');
+  const [plans, setPlans] = useState(SUBSCRIPTION_PLANS)
+  const [selectedPlan, setSelectedPlan] = useState('premium');
   const [frequency, setFrequency] = useState('biweekly');
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch('/api/subscriptions/plans')
+        const data = await response.json()
+        
+        if (data.success) {
+          setPlans(data.data)
+        }
+      } catch (err) {
+        console.error('Error fetching plans:', err)
+        // Use default plans if API fails
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPlans()
+  }, [])
 
   return (
     <>
@@ -120,7 +101,7 @@ export default function Subscriptions() {
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {SUBSCRIPTION_PLANS.map((plan) => (
+            {plans.map((plan) => (
               <div 
                 key={plan.id}
                 className={`rounded-lg overflow-hidden ${
@@ -189,9 +170,9 @@ export default function Subscriptions() {
               </div>
             </div>
             
-            <button className="w-full bg-coffee hover:bg-coffee-light text-cream-light py-3 rounded-md mt-8 transition-colors">
-              Continue to Coffee Selection
-            </button>
+            <Link href="/subscriptions/signup" className="block w-full bg-coffee hover:bg-coffee-light text-cream-light py-3 rounded-md mt-8 transition-colors text-center">
+              Start Your Subscription
+            </Link>
           </div>
         </div>
       </section>
