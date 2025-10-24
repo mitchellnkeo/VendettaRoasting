@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { createOrderConfirmationEmail, sendEmail } from '../../../lib/email';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -6,7 +7,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { orderId, customerEmail, customerName, orderTotal, items } = req.body;
+    const { 
+      orderId, 
+      customerEmail, 
+      customerName, 
+      orderTotal, 
+      items, 
+      shippingAddress,
+      estimatedDelivery 
+    } = req.body;
 
     // Validate required fields
     if (!orderId || !customerEmail || !customerName || !orderTotal || !items) {
@@ -16,31 +25,42 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // In a real application, you would:
-    // 1. Use an email service like SendGrid, Mailgun, or AWS SES
-    // 2. Create a professional email template
-    // 3. Send the actual email
-
-    // For now, we'll simulate email sending
-    console.log('📧 Order Confirmation Email Sent:');
-    console.log('To:', customerEmail);
-    console.log('Order ID:', orderId);
-    console.log('Customer:', customerName);
-    console.log('Total:', orderTotal);
-    console.log('Items:', items);
-
-    // Simulate email service delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    res.status(200).json({
-      success: true,
-      message: 'Order confirmation email sent successfully',
-      data: {
-        orderId,
-        emailSent: true,
-        timestamp: new Date().toISOString()
-      }
+    // Create email template
+    const emailData = createOrderConfirmationEmail({
+      orderId,
+      customerName,
+      customerEmail,
+      orderTotal,
+      items,
+      shippingAddress: shippingAddress || {
+        street: 'Address not provided',
+        city: 'City not provided',
+        state: 'State not provided',
+        zipCode: 'ZIP not provided',
+        country: 'Country not provided'
+      },
+      estimatedDelivery: estimatedDelivery || new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString()
     });
+
+    // Send email
+    const emailSent = await sendEmail(emailData);
+
+    if (emailSent) {
+      res.status(200).json({
+        success: true,
+        message: 'Order confirmation email sent successfully',
+        data: {
+          orderId,
+          emailSent: true,
+          timestamp: new Date().toISOString()
+        }
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: 'Failed to send confirmation email'
+      });
+    }
 
   } catch (error) {
     console.error('Error sending confirmation email:', error);

@@ -91,7 +91,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           customerEmail: order.customer.email,
           customerName: `${order.customer.firstName} ${order.customer.lastName}`,
           orderTotal: order.totals.total,
-          items: order.items
+          items: order.items,
+          shippingAddress: order.shipping.address,
+          estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString()
         })
       });
 
