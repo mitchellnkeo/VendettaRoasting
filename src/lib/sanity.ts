@@ -3,7 +3,7 @@ import imageUrlBuilder from '@sanity/image-url'
 
 // Sanity configuration
 export const sanityConfig = {
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'your-project-id',
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'pyoyob4y',
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
   apiVersion: '2023-05-03', // Use current date (YYYY-MM-DD) to target the latest API version
   useCdn: process.env.NODE_ENV === 'production', // Use CDN for production

@@ -33,7 +33,7 @@ SANITY_API_TOKEN=your-api-token
 
 ```bash
 # .env.local
-NEXT_PUBLIC_SANITY_PROJECT_ID=vendetta-roasting-2024
+NEXT_PUBLIC_SANITY_PROJECT_ID=pyoyob4y
 NEXT_PUBLIC_SANITY_DATASET=production
 SANITY_API_TOKEN=sk1234567890abcdef...
 ```
