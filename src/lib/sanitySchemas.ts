@@ -1,7 +1,9 @@
 // Sanity Content Schemas for Vendetta Roasting
 // These schemas define the structure of content in Sanity CMS
 
-export const announcementSchema = {
+import { defineType } from 'sanity'
+
+export const announcementSchema = defineType({
   name: 'announcement',
   title: 'Announcement',
   type: 'document',
@@ -69,9 +71,9 @@ export const announcementSchema = {
       media: 'image'
     }
   }
-}
+})
 
-export const eventSchema = {
+export const eventSchema = defineType({
   name: 'event',
   title: 'Event',
   type: 'document',
@@ -164,9 +166,9 @@ export const eventSchema = {
       }
     }
   }
-}
+})
 
-export const faqSchema = {
+export const faqSchema = defineType({
   name: 'faq',
   title: 'FAQ',
   type: 'document',
@@ -220,9 +222,9 @@ export const faqSchema = {
       subtitle: 'category'
     }
   }
-}
+})
 
-export const blogPostSchema = {
+export const blogPostSchema = defineType({
   name: 'blogPost',
   title: 'Blog Post',
   type: 'document',
@@ -326,9 +328,9 @@ export const blogPostSchema = {
       }
     }
   }
-}
+})
 
-export const aboutContentSchema = {
+export const aboutContentSchema = defineType({
   name: 'aboutContent',
   title: 'About Content',
   type: 'document',
@@ -440,9 +442,9 @@ export const aboutContentSchema = {
       ]
     }
   ]
-}
+})
 
-export const homepageContentSchema = {
+export const homepageContentSchema = defineType({
   name: 'homepageContent',
   title: 'Homepage Content',
   type: 'document',
@@ -498,7 +500,7 @@ export const homepageContentSchema = {
       rows: 3
     }
   ]
-}
+})
 
 // Export all schemas
 export const schemas = [
