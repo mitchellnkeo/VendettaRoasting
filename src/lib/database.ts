@@ -15,7 +15,7 @@ let pool: Pool | null = null;
 export const getPool = (): Pool => {
   if (!pool) {
     if (!process.env.DATABASE_URL) {
-      throw new Error('DATABASE_URL environment variable is not set');
+      throw new Error('DATABASE_URL environment variable is not set. Please set it in .env.local');
     }
     
     pool = new Pool({
