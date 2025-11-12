@@ -15,10 +15,13 @@ let pool: Pool | null = null;
 export const getPool = (): Pool => {
   if (!pool) {
     if (!process.env.DATABASE_URL) {
-      throw new Error('DATABASE_URL environment variable is not set');
+      throw new Error('DATABASE_URL environment variable is not set. Please set it in .env.local');
     }
     
-    pool = new Pool(dbConfig);
+    pool = new Pool({
+      ...dbConfig,
+      connectionTimeoutMillis: 5000, // 5 second timeout
+    });
     
     // Handle pool errors
     pool.on('error', (err) => {
@@ -57,15 +60,20 @@ export const closePool = async (): Promise<void> => {
 
 // Helper function to execute queries
 export const query = async (text: string, params?: any[]): Promise<any> => {
-  const pool = getPool();
-  const start = Date.now();
-  
   try {
+    const pool = getPool();
+    const start = Date.now();
+    
     const result = await pool.query(text, params);
     const duration = Date.now() - start;
     console.log('Executed query', { text, duration, rows: result.rowCount });
     return result;
-  } catch (error) {
+  } catch (error: any) {
+    // Handle missing DATABASE_URL gracefully
+    if (error.message?.includes('DATABASE_URL')) {
+      console.warn('Database query skipped - DATABASE_URL not configured');
+      return { rows: [], rowCount: 0 };
+    }
     console.error('Query error:', error);
     throw error;
   }
