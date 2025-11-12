@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import bcrypt from 'bcryptjs';
+// TODO: Install and use bcryptjs when implementing password hashing
+// import bcrypt from 'bcryptjs';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

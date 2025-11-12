@@ -15,11 +15,9 @@
     "@sanity/image-url": "^1.2.0",
     "@stripe/react-stripe-js": "^5.2.0",
     "@stripe/stripe-js": "^8.1.0",
-    "@types/bcryptjs": "^2.4.6",
     "@types/formidable": "^3.4.6",
     "@types/pg": "^8.15.5",
     "@vercel/blob": "^2.0.0",
-    "bcryptjs": "^3.0.2",
     "formidable": "^3.5.4",
     "next": "^14.1.0",
     "next-auth": "^4.24.11",
@@ -27,7 +25,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "sanity": "^4.11.0",
-    "stripe": "^19.1.0"
+    "stripe": "^19.1.0",
+    "styled-components": "^6.1.19"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
