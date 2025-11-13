@@ -267,14 +267,14 @@ Phase 3 is essentially complete! The core user authentication and account manage
 *Add CMS integration*
 
 ### **Step 8.1: Sanity CMS Setup** 🔄 **IN PROGRESS**
-- [ ] Install and configure Sanity
-- [ ] Create content schemas
-- [ ] Set up Sanity Studio
-- [ ] Test CMS integration
+- [X] Install and configure Sanity
+- [X] Create content schemas
+- [X] Set up Sanity Studio
+- [X] Test CMS integration
 
 ### **Step 8.2: Dynamic Content**
-- [ ] Replace static content with CMS data
-- [ ] Add announcements system
+- [X] Replace static content with CMS data
+- [X] Add announcements system
 - [ ] Implement events calendar
 - [ ] Test dynamic content loading
 
