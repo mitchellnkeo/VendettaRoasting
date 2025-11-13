@@ -7,23 +7,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const query = `*[_type == "faq" && isActive == true] | order(sortOrder asc, _createdAt asc) {
+    const query = `*[_type == "event" && isActive == true && eventDate >= now()] | order(eventDate asc) {
       _id,
-      question,
-      answer,
-      category,
-      sortOrder,
+      title,
+      description,
+      slug,
+      eventDate,
+      location,
+      address,
+      price,
+      maxAttendees,
       isActive
     }`;
 
-    const faqs = await sanityClient.fetch(query);
+    const events = await sanityClient.fetch(query);
 
     res.status(200).json({
       success: true,
-      data: faqs,
+      data: events,
     });
   } catch (error) {
-    console.error('Error fetching FAQs:', error);
+    console.error('Error fetching events:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -31,3 +35,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 }
+

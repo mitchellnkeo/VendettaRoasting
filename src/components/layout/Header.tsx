@@ -32,6 +32,9 @@ const Header = () => {
             <Link href="/events" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-coffee hover:text-coffee-dark">
               Events
             </Link>
+            <Link href="/faq" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-coffee hover:text-coffee-dark">
+              FAQ
+            </Link>
             <Link href="/wholesale" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-coffee hover:text-coffee-dark">
               Wholesale
             </Link>
@@ -114,6 +117,9 @@ const Header = () => {
             </Link>
             <Link href="/events" className="block pl-3 pr-4 py-2 text-base font-medium text-coffee hover:bg-cream">
               Events
+            </Link>
+            <Link href="/faq" className="block pl-3 pr-4 py-2 text-base font-medium text-coffee hover:bg-cream">
+              FAQ
             </Link>
             <Link href="/wholesale" className="block pl-3 pr-4 py-2 text-base font-medium text-coffee hover:bg-cream">
               Wholesale
