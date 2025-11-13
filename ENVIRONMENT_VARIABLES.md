@@ -17,8 +17,8 @@ STRIPE_SECRET_KEY=your_stripe_secret
 STRIPE_WEBHOOK_SECRET=your_webhook_secret
 
 # Sanity CMS Configuration
-SANITY_PROJECT_ID=your_project_id
-SANITY_DATASET=production
+NEXT_PUBLIC_SANITY_PROJECT_ID=pyoyob4y
+NEXT_PUBLIC_SANITY_DATASET=production
 SANITY_API_TOKEN=your_sanity_token
 
 # Vercel Blob Configuration (NEW)

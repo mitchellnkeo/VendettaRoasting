@@ -148,11 +148,35 @@ The client will automatically connect when:
 
 ## 🎯 Next Steps
 
-1. **Create `.env.local`** with Sanity credentials
-2. **Test Sanity Studio**: Run `npm run studio`
-3. **Create some test content** in Studio
-4. **Test API endpoints** with your dev server running
-5. **Deploy Studio** for client access: `npm run studio:deploy`
+1. **Create `.env.local`** with Sanity credentials (see `.env.local.example` for template)
+2. **Set Vercel Environment Variables** (for production):
+   - Go to Vercel Dashboard → Project → Settings → Environment Variables
+   - Add: `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET`, `SANITY_API_TOKEN`
+   - Ensure they're set for Production, Preview, and Development environments
+3. **Test Sanity Studio**: Run `npm run studio`
+4. **Create some test content** in Studio
+5. **Test API endpoints** with your dev server running
+6. **Deploy Studio** for client access: `npm run studio:deploy`
+7. **Verify production API endpoints** on your Vercel deployment
+
+## 🌐 Vercel Production Setup
+
+Since your site is hosted on Vercel, you need to set environment variables there:
+
+1. **Go to Vercel Dashboard**: https://vercel.com/dashboard
+2. **Select your project**: Vendetta Roasting
+3. **Navigate to**: Settings → Environment Variables
+4. **Add these variables** for Production, Preview, and Development:
+   - `NEXT_PUBLIC_SANITY_PROJECT_ID` = `pyoyob4y`
+   - `NEXT_PUBLIC_SANITY_DATASET` = `production`
+   - `SANITY_API_TOKEN` = `your_token_here` (starts with `sk`)
+5. **Redeploy** after adding variables (or push a commit to trigger auto-deploy)
+
+**Test Production API:**
+```bash
+# Replace with your actual Vercel URL
+curl https://vendetta-roasting.vercel.app/api/content/announcements
+```
 
 ## 📚 Resources
 
