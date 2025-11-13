@@ -1,0 +1,278 @@
+[
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "title",
+        "type": "string"
+      },
+      {
+        "options": {
+          "source": "title",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "slug",
+        "type": "slug"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "content",
+        "type": "text"
+      },
+      {
+        "initialValue": true,
+        "description": "Only active announcements will be displayed on the website",
+        "name": "isActive",
+        "type": "boolean",
+        "title": "Active"
+      },
+      {
+        "initialValue": false,
+        "description": "Featured announcements will be more prominently displayed",
+        "name": "isFeatured",
+        "type": "boolean",
+        "title": "Featured"
+      },
+      {
+        "name": "publishedAt",
+        "type": "datetime"
+      },
+      {
+        "description": "Optional: Announcement will automatically stop showing after this date",
+        "name": "expiresAt",
+        "type": "datetime"
+      }
+    ],
+    "name": "announcement",
+    "type": "document"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "title",
+        "type": "string",
+        "title": "Event Title"
+      },
+      {
+        "options": {
+          "source": "title",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "slug",
+        "type": "slug"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "description",
+        "type": "text"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "eventDate",
+        "type": "datetime",
+        "title": "Event Date & Time"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "location",
+        "type": "string"
+      },
+      {
+        "description": "Full address for the event location",
+        "name": "address",
+        "type": "text"
+      },
+      {
+        "description": "Event price in USD (leave empty if free)",
+        "name": "price",
+        "type": "number"
+      },
+      {
+        "description": "Maximum number of attendees (leave empty if unlimited)",
+        "name": "maxAttendees",
+        "type": "number"
+      },
+      {
+        "initialValue": true,
+        "description": "Only active events will be displayed on the website",
+        "name": "isActive",
+        "type": "boolean",
+        "title": "Active"
+      }
+    ],
+    "name": "event",
+    "type": "document"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "question",
+        "type": "string"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "answer",
+        "type": "text"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "General",
+              "value": "general"
+            },
+            {
+              "title": "Shipping",
+              "value": "shipping"
+            },
+            {
+              "title": "Subscriptions",
+              "value": "subscriptions"
+            },
+            {
+              "title": "Products",
+              "value": "products"
+            },
+            {
+              "title": "Returns",
+              "value": "returns"
+            },
+            {
+              "title": "Account",
+              "value": "account"
+            }
+          ]
+        },
+        "initialValue": "general",
+        "name": "category",
+        "type": "string"
+      },
+      {
+        "initialValue": 0,
+        "description": "Lower numbers appear first. Leave empty to use default ordering.",
+        "name": "sortOrder",
+        "type": "number"
+      },
+      {
+        "initialValue": true,
+        "description": "Only active FAQs will be displayed on the website",
+        "name": "isActive",
+        "type": "boolean",
+        "title": "Active"
+      }
+    ],
+    "name": "faq",
+    "type": "document",
+    "title": "FAQ"
+  }
+]

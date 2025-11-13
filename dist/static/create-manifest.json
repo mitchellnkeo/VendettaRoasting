@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "createdAt": "2025-11-13T05:29:20.763Z",
+  "workspaces": [
+    {
+      "name": "vendetta-roasting",
+      "title": "Vendetta Roasting CMS",
+      "basePath": "/",
+      "projectId": "pyoyob4y",
+      "dataset": "production",
+      "icon": "<style data-styled=\"true\" data-styled-version=\"6.1.19\">.hfXNsv{font-family:Inter,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,\"Helvetica Neue\",\"Liberation Sans\",Helvetica,Arial,system-ui,sans-serif;font-weight:500;font-size:13px;transform:translateY(1px);}/*!sc*/\ndata-styled.g405[id=\"sc-gzpDuk\"]{content:\"hfXNsv,\"}/*!sc*/\n</style><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" rx=\"2\" fill=\"#f77769\"></rect><text x=\"50%\" y=\"50%\" text-anchor=\"middle\" alignment-baseline=\"middle\" fill=\"hsla(6, 90%, 29%, 1)\" class=\"sc-gzpDuk hfXNsv\">VR</text></svg>",
+      "mediaLibrary": {
+        "enabled": false
+      },
+      "schema": "58e62e2c.create-schema.json",
+      "tools": "6b09ad9d.create-tools.json"
+    }
+  ],
+  "studioVersion": "4.15.0"
+}
