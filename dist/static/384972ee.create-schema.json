@@ -1,0 +1,801 @@
+[
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              },
+              {
+                "flag": "max",
+                "constraint": 100
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "title",
+        "type": "string"
+      },
+      {
+        "options": {
+          "source": "title",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "slug",
+        "type": "slug"
+      },
+      {
+        "rows": 4,
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "content",
+        "type": "text"
+      },
+      {
+        "initialValue": true,
+        "name": "isActive",
+        "type": "boolean",
+        "title": "Active"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "Low",
+              "value": "low"
+            },
+            {
+              "title": "Medium",
+              "value": "medium"
+            },
+            {
+              "title": "High",
+              "value": "high"
+            },
+            {
+              "title": "Urgent",
+              "value": "urgent"
+            }
+          ]
+        },
+        "initialValue": "medium",
+        "name": "priority",
+        "type": "string"
+      },
+      {
+        "name": "publishedAt",
+        "type": "datetime"
+      },
+      {
+        "description": "Optional expiration date for the announcement",
+        "name": "expiresAt",
+        "type": "datetime"
+      }
+    ],
+    "name": "announcement",
+    "type": "document"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              },
+              {
+                "flag": "max",
+                "constraint": 100
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "title",
+        "type": "string",
+        "title": "Event Title"
+      },
+      {
+        "options": {
+          "source": "title",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "slug",
+        "type": "slug"
+      },
+      {
+        "rows": 4,
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "description",
+        "type": "text"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "date",
+        "type": "datetime",
+        "title": "Event Date"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "location",
+        "type": "string"
+      },
+      {
+        "rows": 2,
+        "name": "address",
+        "type": "text"
+      },
+      {
+        "description": "Price in dollars (0 for free events)",
+        "name": "price",
+        "type": "number"
+      },
+      {
+        "name": "maxAttendees",
+        "type": "number"
+      },
+      {
+        "options": {
+          "hotspot": true
+        },
+        "name": "image",
+        "type": "image",
+        "title": "Event Image"
+      },
+      {
+        "initialValue": true,
+        "name": "isActive",
+        "type": "boolean",
+        "title": "Active"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "uri",
+                "constraint": {
+                  "options": {
+                    "scheme": [
+                      "/^http$/",
+                      "/^https$/"
+                    ],
+                    "allowRelative": false,
+                    "relativeOnly": false,
+                    "allowCredentials": false
+                  }
+                }
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Link to event registration or ticket purchase",
+        "name": "registrationUrl",
+        "type": "url",
+        "title": "Registration URL"
+      }
+    ],
+    "name": "event",
+    "type": "document"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              },
+              {
+                "flag": "max",
+                "constraint": 200
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "question",
+        "type": "string"
+      },
+      {
+        "rows": 4,
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "answer",
+        "type": "text"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "General",
+              "value": "general"
+            },
+            {
+              "title": "Shipping",
+              "value": "shipping"
+            },
+            {
+              "title": "Subscriptions",
+              "value": "subscriptions"
+            },
+            {
+              "title": "Products",
+              "value": "products"
+            },
+            {
+              "title": "Returns",
+              "value": "returns"
+            },
+            {
+              "title": "Account",
+              "value": "account"
+            }
+          ]
+        },
+        "initialValue": "general",
+        "name": "category",
+        "type": "string"
+      },
+      {
+        "initialValue": 0,
+        "description": "Lower numbers appear first",
+        "name": "order",
+        "type": "number",
+        "title": "Display Order"
+      },
+      {
+        "initialValue": true,
+        "name": "isActive",
+        "type": "boolean",
+        "title": "Active"
+      }
+    ],
+    "name": "faq",
+    "type": "document",
+    "title": "FAQ"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              },
+              {
+                "flag": "max",
+                "constraint": 100
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "title",
+        "type": "string"
+      },
+      {
+        "options": {
+          "source": "title",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "slug",
+        "type": "slug"
+      },
+      {
+        "rows": 3,
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              },
+              {
+                "flag": "max",
+                "constraint": 200
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "excerpt",
+        "type": "text"
+      },
+      {
+        "of": [
+          {
+            "marks": {
+              "annotations": [
+                {
+                  "i18nTitleKey": "inputs.portable-text.annotation.link",
+                  "options": {
+                    "modal": {
+                      "type": "popover"
+                    }
+                  },
+                  "fields": [
+                    {
+                      "validation": [
+                        {
+                          "rules": [
+                            {
+                              "flag": "uri",
+                              "constraint": {
+                                "options": {
+                                  "scheme": [
+                                    "/^http$/",
+                                    "/^https$/",
+                                    "/^tel$/",
+                                    "/^mailto$/"
+                                  ],
+                                  "allowRelative": true,
+                                  "relativeOnly": false,
+                                  "allowCredentials": false
+                                }
+                              }
+                            }
+                          ],
+                          "level": "error"
+                        }
+                      ],
+                      "description": "A valid web, email, phone, or relative link.",
+                      "name": "href",
+                      "type": "url",
+                      "title": "Link"
+                    }
+                  ],
+                  "name": "link",
+                  "type": "object"
+                }
+              ],
+              "decorators": [
+                {
+                  "value": "strong",
+                  "title": "Strong"
+                },
+                {
+                  "value": "em",
+                  "title": "Italic"
+                },
+                {
+                  "value": "code",
+                  "title": "Code"
+                },
+                {
+                  "value": "underline",
+                  "title": "Underline"
+                },
+                {
+                  "value": "strike-through",
+                  "title": "Strike"
+                }
+              ]
+            },
+            "lists": [
+              {
+                "value": "bullet",
+                "title": "Bullet"
+              },
+              {
+                "value": "number",
+                "title": "Number"
+              }
+            ],
+            "styles": [
+              {
+                "value": "normal",
+                "title": "Normal"
+              },
+              {
+                "value": "h1",
+                "title": "H1"
+              },
+              {
+                "value": "h2",
+                "title": "H2"
+              },
+              {
+                "value": "h3",
+                "title": "H3"
+              },
+              {
+                "value": "blockquote",
+                "title": "Quote"
+              }
+            ],
+            "of": [],
+            "type": "block"
+          },
+          {
+            "options": {
+              "hotspot": true
+            },
+            "type": "image"
+          }
+        ],
+        "name": "content",
+        "type": "array"
+      },
+      {
+        "options": {
+          "hotspot": true
+        },
+        "name": "featuredImage",
+        "type": "image"
+      },
+      {
+        "initialValue": "Vendetta Roasting Team",
+        "name": "author",
+        "type": "string"
+      },
+      {
+        "name": "publishedAt",
+        "type": "datetime"
+      },
+      {
+        "initialValue": false,
+        "name": "isFeatured",
+        "type": "boolean",
+        "title": "Featured Post"
+      },
+      {
+        "options": {
+          "layout": "tags"
+        },
+        "of": [
+          {
+            "type": "string"
+          }
+        ],
+        "name": "tags",
+        "type": "array"
+      }
+    ],
+    "name": "blogPost",
+    "type": "document"
+  },
+  {
+    "fields": [
+      {
+        "initialValue": "About Vendetta Roasting",
+        "name": "title",
+        "type": "string",
+        "title": "Page Title"
+      },
+      {
+        "options": {
+          "hotspot": true
+        },
+        "name": "heroImage",
+        "type": "image"
+      },
+      {
+        "rows": 3,
+        "name": "heroText",
+        "type": "text"
+      },
+      {
+        "of": [
+          {
+            "marks": {
+              "annotations": [
+                {
+                  "i18nTitleKey": "inputs.portable-text.annotation.link",
+                  "options": {
+                    "modal": {
+                      "type": "popover"
+                    }
+                  },
+                  "fields": [
+                    {
+                      "validation": [
+                        {
+                          "rules": [
+                            {
+                              "flag": "uri",
+                              "constraint": {
+                                "options": {
+                                  "scheme": [
+                                    "/^http$/",
+                                    "/^https$/",
+                                    "/^tel$/",
+                                    "/^mailto$/"
+                                  ],
+                                  "allowRelative": true,
+                                  "relativeOnly": false,
+                                  "allowCredentials": false
+                                }
+                              }
+                            }
+                          ],
+                          "level": "error"
+                        }
+                      ],
+                      "description": "A valid web, email, phone, or relative link.",
+                      "name": "href",
+                      "type": "url",
+                      "title": "Link"
+                    }
+                  ],
+                  "name": "link",
+                  "type": "object"
+                }
+              ],
+              "decorators": [
+                {
+                  "value": "strong",
+                  "title": "Strong"
+                },
+                {
+                  "value": "em",
+                  "title": "Italic"
+                },
+                {
+                  "value": "code",
+                  "title": "Code"
+                },
+                {
+                  "value": "underline",
+                  "title": "Underline"
+                },
+                {
+                  "value": "strike-through",
+                  "title": "Strike"
+                }
+              ]
+            },
+            "lists": [
+              {
+                "value": "bullet",
+                "title": "Bulleted list"
+              },
+              {
+                "value": "number",
+                "title": "Numbered list"
+              }
+            ],
+            "styles": [
+              {
+                "value": "normal",
+                "title": "Normal"
+              },
+              {
+                "value": "h2",
+                "title": "H2"
+              },
+              {
+                "value": "h3",
+                "title": "H3"
+              }
+            ],
+            "of": [],
+            "type": "block"
+          }
+        ],
+        "name": "story",
+        "type": "array",
+        "title": "Our Story"
+      },
+      {
+        "rows": 3,
+        "name": "mission",
+        "type": "text",
+        "title": "Mission Statement"
+      },
+      {
+        "of": [
+          {
+            "fields": [
+              {
+                "name": "title",
+                "type": "string",
+                "title": "Value Title"
+              },
+              {
+                "rows": 2,
+                "name": "description",
+                "type": "text"
+              },
+              {
+                "description": "Icon name or emoji",
+                "name": "icon",
+                "type": "string"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "name": "values",
+        "type": "array",
+        "title": "Our Values"
+      },
+      {
+        "of": [
+          {
+            "fields": [
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "role",
+                "type": "string"
+              },
+              {
+                "rows": 3,
+                "name": "bio",
+                "type": "text"
+              },
+              {
+                "options": {
+                  "hotspot": true
+                },
+                "name": "image",
+                "type": "image",
+                "title": "Photo"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "name": "team",
+        "type": "array",
+        "title": "Team Members"
+      }
+    ],
+    "name": "aboutContent",
+    "type": "document"
+  },
+  {
+    "fields": [
+      {
+        "initialValue": "Premium Coffee Roasted Fresh Daily",
+        "name": "heroTitle",
+        "type": "string"
+      },
+      {
+        "rows": 2,
+        "name": "heroSubtitle",
+        "type": "text"
+      },
+      {
+        "options": {
+          "hotspot": true
+        },
+        "name": "heroImage",
+        "type": "image"
+      },
+      {
+        "initialValue": "Featured Products",
+        "name": "featuredProductsTitle",
+        "type": "string"
+      },
+      {
+        "initialValue": "About Vendetta Roasting",
+        "name": "aboutSectionTitle",
+        "type": "string"
+      },
+      {
+        "rows": 4,
+        "name": "aboutSectionText",
+        "type": "text"
+      },
+      {
+        "initialValue": "Never Run Out of Coffee",
+        "name": "subscriptionTitle",
+        "type": "string",
+        "title": "Subscription Section Title"
+      },
+      {
+        "rows": 3,
+        "name": "subscriptionText",
+        "type": "text",
+        "title": "Subscription Section Text"
+      }
+    ],
+    "name": "homepageContent",
+    "type": "document"
+  }
+]
