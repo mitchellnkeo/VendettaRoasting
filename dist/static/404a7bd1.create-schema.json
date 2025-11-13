@@ -1,0 +1,27 @@
+[
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "title",
+        "type": "string"
+      },
+      {
+        "name": "content",
+        "type": "text"
+      }
+    ],
+    "name": "test",
+    "type": "document"
+  }
+]

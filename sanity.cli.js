@@ -5,8 +5,5 @@ export default defineCliConfig({
     projectId: 'pyoyob4y',
     dataset: 'production'
   },
-  deployment: {
-    appId: 'x3edffin1buufvwe8sd337nd',
-  },
+  // Removed deployment.appId to allow creating a new deployment
 })
-
