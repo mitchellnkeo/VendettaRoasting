@@ -1,0 +1,12 @@
+[
+  {
+    "fields": [
+      {
+        "name": "title",
+        "type": "string"
+      }
+    ],
+    "name": "test",
+    "type": "document"
+  }
+]
