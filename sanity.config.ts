@@ -1,17 +1,16 @@
 import { defineConfig } from 'sanity'
-import { schemas } from './src/lib/sanitySchemas'
+import { schemaTypes } from './schemas'
 
 export default defineConfig({
-  name: 'vendetta-roasting-studio',
+  name: 'vendetta-roasting',
   title: 'Vendetta Roasting CMS',
   
   projectId: 'pyoyob4y',
   dataset: 'production',
   
-  plugins: [],
+  basePath: '/studio',
   
   schema: {
-    types: schemas
-  }
+    types: schemaTypes,
+  },
 })
-

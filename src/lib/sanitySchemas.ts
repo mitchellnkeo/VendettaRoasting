@@ -67,8 +67,7 @@ export const announcementSchema = defineType({
   preview: {
     select: {
       title: 'title',
-      subtitle: 'priority',
-      media: 'image'
+      subtitle: 'priority'
     }
   }
 })
