@@ -4,13 +4,7 @@ export default defineType({
   name: 'homepage',
   title: 'Homepage Content',
   type: 'document',
-  // Only allow one homepage document
-  __experimental_actions: [
-    // 'create',
-    'update',
-    // 'delete',
-    'publish',
-  ],
+  // Note: Only create one homepage document. Additional documents won't be used.
   fields: [
     defineField({
       name: 'title',
