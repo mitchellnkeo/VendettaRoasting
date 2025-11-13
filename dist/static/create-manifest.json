@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "createdAt": "2025-11-13T04:08:02.541Z",
+  "createdAt": "2025-11-13T04:16:22.340Z",
   "workspaces": [
     {
       "name": "vendetta-roasting",
@@ -12,7 +12,7 @@
       "mediaLibrary": {
         "enabled": false
       },
-      "schema": "16254e22.create-schema.json",
+      "schema": "9e14a7ae.create-schema.json",
       "tools": "7590ac14.create-tools.json"
     }
   ]
