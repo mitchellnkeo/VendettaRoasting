@@ -7,7 +7,6 @@ export const testType = defineType({
   fields: [
     {
       name: 'title',
-      title: 'Title',
       type: 'string',
     },
   ],

@@ -2,8 +2,8 @@ import { defineConfig } from 'sanity'
 import { schemaTypes } from './schemas'
 
 export default defineConfig({
-  name: 'vendetta-roasting-test',
-  title: 'Vendetta Roasting Test',
+  name: 'default',
+  title: 'Vendetta Roasting',
   
   projectId: 'pyoyob4y',
   dataset: 'production',
