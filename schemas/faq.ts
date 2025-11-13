@@ -1,6 +1,6 @@
 import { defineField, defineType } from 'sanity'
 
-export default defineType({
+export const faqType = defineType({
   name: 'faq',
   title: 'FAQ',
   type: 'document',
@@ -9,14 +9,14 @@ export default defineType({
       name: 'question',
       title: 'Question',
       type: 'string',
-      validation: (Rule) => Rule.required().max(200),
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'answer',
       title: 'Answer',
       type: 'text',
       rows: 4,
-      validation: (Rule) => Rule.required(),
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'category',
@@ -55,4 +55,3 @@ export default defineType({
     },
   },
 })
-

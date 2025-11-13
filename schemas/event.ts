@@ -1,6 +1,6 @@
 import { defineField, defineType } from 'sanity'
 
-export default defineType({
+export const eventType = defineType({
   name: 'event',
   title: 'Event',
   type: 'document',
@@ -9,7 +9,7 @@ export default defineType({
       name: 'title',
       title: 'Event Title',
       type: 'string',
-      validation: (Rule) => Rule.required().max(100),
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'slug',
@@ -19,26 +19,25 @@ export default defineType({
         source: 'title',
         maxLength: 96,
       },
-      validation: (Rule) => Rule.required().error('Please generate a slug from the title'),
     }),
     defineField({
       name: 'description',
       title: 'Description',
       type: 'text',
       rows: 4,
-      validation: (Rule) => Rule.required(),
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'date',
       title: 'Event Date',
       type: 'datetime',
-      validation: (Rule) => Rule.required(),
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'location',
       title: 'Location',
       type: 'string',
-      validation: (Rule) => Rule.required(),
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'address',
@@ -88,4 +87,3 @@ export default defineType({
     },
   },
 })
-

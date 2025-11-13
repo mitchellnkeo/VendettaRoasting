@@ -1,6 +1,6 @@
 import { defineField, defineType } from 'sanity'
 
-export default defineType({
+export const announcementType = defineType({
   name: 'announcement',
   title: 'Announcement',
   type: 'document',
@@ -9,7 +9,7 @@ export default defineType({
       name: 'title',
       title: 'Title',
       type: 'string',
-      validation: (Rule) => Rule.required(),
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'slug',
@@ -25,7 +25,7 @@ export default defineType({
       title: 'Content',
       type: 'text',
       rows: 4,
-      validation: (Rule) => Rule.required(),
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'isActive',

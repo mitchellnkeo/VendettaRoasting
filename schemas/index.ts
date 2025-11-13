@@ -1,10 +1,9 @@
-import announcement from './announcement'
-import event from './event'
-import faq from './faq'
+import { announcementType } from './announcement'
+import { eventType } from './event'
+import { faqType } from './faq'
 
 export const schemaTypes = [
-  announcement,
-  event,
-  faq,
+  announcementType,
+  eventType,
+  faqType,
 ]
-
