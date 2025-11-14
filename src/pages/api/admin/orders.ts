@@ -25,19 +25,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           o.created_at,
           o.updated_at,
           u.email as customer_email,
-          u.first_name || ' ' || u.last_name as customer_name
+          COALESCE(u.first_name || ' ' || u.last_name, 'Guest') as customer_name
         FROM orders o
         LEFT JOIN users u ON o.user_id = u.id
       `;
       
       const params: any[] = [];
+      let paramIndex = 1;
       
-      if (status && typeof status === 'string') {
-        ordersQuery += ` WHERE o.status = $1`;
+      if (status && typeof status === 'string' && status !== 'all') {
+        ordersQuery += ` WHERE o.status = $${paramIndex}`;
         params.push(status);
+        paramIndex++;
       }
       
-      ordersQuery += ` ORDER BY o.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+      ordersQuery += ` ORDER BY o.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
       params.push(parseInt(limit as string), parseInt(offset as string));
 
       const result = await query(ordersQuery, params);

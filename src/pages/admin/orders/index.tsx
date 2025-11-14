@@ -48,10 +48,14 @@ export default function AdminOrders() {
       const data = await response.json();
       
       if (data.success) {
-        setOrders(data.data);
+        setOrders(data.data || []);
+      } else {
+        console.error('Failed to fetch orders:', data.message);
+        setOrders([]);
       }
     } catch (error) {
       console.error('Error fetching orders:', error);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -172,10 +176,16 @@ export default function AdminOrders() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredOrders.length === 0 ? (
+                  {loading ? (
                     <tr>
                       <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
-                        {loading ? 'Loading orders...' : 'No orders found'}
+                        Loading orders...
+                      </td>
+                    </tr>
+                  ) : filteredOrders.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                        {searchTerm ? 'No orders match your search' : 'No orders found'}
                       </td>
                     </tr>
                   ) : (

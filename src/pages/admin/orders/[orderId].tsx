@@ -73,9 +73,13 @@ export default function AdminOrderDetail() {
           payment_status: data.data.payment_status,
           notes: data.data.notes || '',
         });
+      } else {
+        console.error('Failed to fetch order:', data.message);
+        setOrder(null);
       }
     } catch (error) {
       console.error('Error fetching order:', error);
+      setOrder(null);
     } finally {
       setLoading(false);
     }
