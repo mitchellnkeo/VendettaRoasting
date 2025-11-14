@@ -44,13 +44,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const result = await query(ordersQuery, params);
 
+      // If database is not connected, return empty array with a message
+      if (!process.env.DATABASE_URL) {
+        return res.status(200).json({
+          success: true,
+          data: [],
+          total: 0,
+          message: 'Database not configured. Orders will appear here once DATABASE_URL is set.',
+        });
+      }
+
       res.status(200).json({
         success: true,
-        data: result.rows,
-        total: result.rows.length,
+        data: result.rows || [],
+        total: result.rows?.length || 0,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching orders:', error);
+      
+      // Handle database connection errors gracefully
+      if (error.code === 'ENOTFOUND' || error.message?.includes('DATABASE_URL')) {
+        return res.status(200).json({
+          success: true,
+          data: [],
+          total: 0,
+          message: 'Database connection error. Please check your DATABASE_URL configuration.',
+        });
+      }
+
       res.status(500).json({
         success: false,
         message: 'Internal server error',

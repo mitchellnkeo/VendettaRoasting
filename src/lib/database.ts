@@ -61,6 +61,12 @@ export const closePool = async (): Promise<void> => {
 // Helper function to execute queries
 export const query = async (text: string, params?: any[]): Promise<any> => {
   try {
+    // Check if DATABASE_URL is set
+    if (!process.env.DATABASE_URL) {
+      console.warn('Database query skipped - DATABASE_URL not configured');
+      return { rows: [], rowCount: 0 };
+    }
+
     const pool = getPool();
     const start = Date.now();
     
@@ -70,8 +76,8 @@ export const query = async (text: string, params?: any[]): Promise<any> => {
     return result;
   } catch (error: any) {
     // Handle missing DATABASE_URL gracefully
-    if (error.message?.includes('DATABASE_URL')) {
-      console.warn('Database query skipped - DATABASE_URL not configured');
+    if (error.message?.includes('DATABASE_URL') || error.code === 'ENOTFOUND') {
+      console.warn('Database query skipped - DATABASE_URL not configured or invalid');
       return { rows: [], rowCount: 0 };
     }
     console.error('Query error:', error);
