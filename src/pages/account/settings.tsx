@@ -118,7 +118,7 @@ export default function AccountSettings() {
               <div className="flex items-center justify-between mb-4">
                 <h1 className="text-3xl font-bold text-coffee-dark">Account Settings</h1>
                 <Link 
-                  href="/account/dashboard"
+                  href="/account"
                   className="text-coffee hover:text-coffee-light font-medium"
                 >
                   ← Back to Dashboard

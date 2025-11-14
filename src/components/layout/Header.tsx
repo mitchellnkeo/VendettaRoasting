@@ -51,7 +51,7 @@ const Header = () => {
                   Welcome, {user?.firstName || 'User'}!
                 </span>
                 <div className="flex items-center space-x-2">
-                  <Link href="/account/dashboard" className="text-sm text-coffee hover:text-coffee-dark">
+                  <Link href="/account" className="text-sm text-coffee hover:text-coffee-dark">
                     Dashboard
                   </Link>
                   <span className="text-coffee">|</span>
@@ -133,7 +133,7 @@ const Header = () => {
                   <div className="pl-3 pr-4 py-2 text-base font-medium text-coffee">
                     Welcome, {user?.firstName || 'User'}!
                   </div>
-                  <Link href="/account/dashboard" className="block pl-3 pr-4 py-2 text-base font-medium text-coffee hover:bg-cream">
+                  <Link href="/account" className="block pl-3 pr-4 py-2 text-base font-medium text-coffee hover:bg-cream">
                     Dashboard
                   </Link>
                   <button 
