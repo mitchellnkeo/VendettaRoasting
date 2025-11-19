@@ -16,15 +16,59 @@ const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
+// Load .env.local file
+function loadEnvFile() {
+  const envPath = path.join(__dirname, '..', '.env.local');
+  
+  if (fs.existsSync(envPath)) {
+    const envFile = fs.readFileSync(envPath, 'utf8');
+    const lines = envFile.split('\n');
+    
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      // Skip comments and empty lines
+      if (!trimmedLine || trimmedLine.startsWith('#')) continue;
+      
+      const match = trimmedLine.match(/^([^=]+)=(.*)$/);
+      if (match) {
+        const key = match[1].trim();
+        let value = match[2].trim();
+        
+        // Remove quotes if present
+        if ((value.startsWith('"') && value.endsWith('"')) || 
+            (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.slice(1, -1);
+        }
+        
+        process.env[key] = value;
+      }
+    }
+  }
+}
+
 async function setupDatabase() {
+  // Load .env.local if it exists
+  loadEnvFile();
+  
   // Get DATABASE_URL from environment
-  const databaseUrl = process.env.DATABASE_URL;
+  let databaseUrl = process.env.DATABASE_URL;
   
   if (!databaseUrl) {
     console.error('❌ Error: DATABASE_URL environment variable is not set.');
     console.log('\nPlease set it in your .env.local file:');
     console.log('DATABASE_URL=postgresql://user:password@host:port/database\n');
     process.exit(1);
+  }
+
+  // Fix common URL encoding issues
+  // If password contains @, it needs to be URL encoded as %40
+  // Check if there are multiple @ symbols (indicates unencoded @ in password)
+  const atCount = (databaseUrl.match(/@/g) || []).length;
+  if (atCount > 1) {
+    console.log('⚠️  Warning: Your DATABASE_URL contains multiple @ symbols.');
+    console.log('   This usually means your password contains an @ that needs to be URL-encoded.');
+    console.log('   Please encode @ as %40 in your password.\n');
+    console.log('   Example: If password is "mypass@123", use "mypass%40123"\n');
   }
 
   console.log('📦 Connecting to database...');
@@ -54,58 +98,57 @@ async function setupDatabase() {
     console.log('📄 Reading database schema...');
     console.log('🚀 Running schema...\n');
 
-    // Split by semicolons and execute each statement
-    const statements = schema
-      .split(';')
-      .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'));
+    // Execute the entire schema as one transaction
+    // This is more reliable than splitting by semicolons
+    console.log('🚀 Executing schema...\n');
 
-    let successCount = 0;
-    let errorCount = 0;
-
-    for (const statement of statements) {
-      try {
-        await pool.query(statement);
-        successCount++;
-        // Show progress for CREATE TABLE statements
-        const match = statement.match(/CREATE TABLE\s+(\w+)/i);
-        if (match) {
-          console.log(`  ✅ Created table: ${match[1]}`);
+    try {
+      // Execute the entire schema file
+      await pool.query(schema);
+      console.log('✅ Schema executed successfully!\n');
+      
+      // List created tables
+      const tablesResult = await pool.query(`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        ORDER BY table_name
+      `);
+      
+      if (tablesResult.rows.length > 0) {
+        console.log(`📊 Created ${tablesResult.rows.length} tables:`);
+        tablesResult.rows.forEach(row => {
+          console.log(`   ✅ ${row.table_name}`);
+        });
+      }
+    } catch (error) {
+      // If it's a "relation already exists" error, that's okay
+      if (error.message.includes('already exists')) {
+        console.log('⚠️  Some tables already exist. Continuing...\n');
+        
+        // Still list what tables exist
+        const tablesResult = await pool.query(`
+          SELECT table_name 
+          FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          ORDER BY table_name
+        `);
+        
+        if (tablesResult.rows.length > 0) {
+          console.log(`📊 Found ${tablesResult.rows.length} tables:`);
+          tablesResult.rows.forEach(row => {
+            console.log(`   ✅ ${row.table_name}`);
+          });
         }
-      } catch (error) {
-        // Ignore "already exists" errors
-        if (error.message.includes('already exists')) {
-          console.log(`  ⚠️  Table already exists (skipping)`);
-        } else {
-          console.error(`  ❌ Error: ${error.message}`);
-          errorCount++;
-        }
+      } else {
+        console.error(`❌ Error executing schema: ${error.message}\n`);
+        console.log('💡 Tip: Try running the schema through Supabase SQL Editor instead.');
+        console.log('   Go to: Dashboard → SQL Editor → New Query → Paste schema → Run\n');
+        throw error;
       }
     }
 
     console.log(`\n✨ Setup complete!`);
-    console.log(`   ✅ Successful: ${successCount}`);
-    if (errorCount > 0) {
-      console.log(`   ❌ Errors: ${errorCount}`);
-    }
-
-    // Verify tables were created
-    console.log('\n📊 Verifying tables...');
-    const tablesResult = await pool.query(`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public' 
-      ORDER BY table_name
-    `);
-
-    if (tablesResult.rows.length > 0) {
-      console.log(`\n✅ Found ${tablesResult.rows.length} tables:`);
-      tablesResult.rows.forEach(row => {
-        console.log(`   - ${row.table_name}`);
-      });
-    } else {
-      console.log('⚠️  No tables found. Please check the schema file.');
-    }
 
   } catch (error) {
     console.error('\n❌ Database setup failed:');

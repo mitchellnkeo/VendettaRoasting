@@ -9,7 +9,9 @@
     "lint": "next lint",
     "studio": "sanity dev",
     "studio:deploy": "sanity deploy",
-    "db:setup": "node scripts/setup-database.js"
+    "db:setup": "node scripts/setup-database.js",
+    "db:test": "node scripts/test-db-connection.js",
+    "db:check": "node scripts/check-connection-string.js"
   },
   "dependencies": {
     "@sanity/client": "^7.12.1",
