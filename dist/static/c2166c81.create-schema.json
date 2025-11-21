@@ -1,0 +1,809 @@
+[
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "title",
+        "type": "string"
+      },
+      {
+        "options": {
+          "source": "title",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "slug",
+        "type": "slug"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "content",
+        "type": "text"
+      },
+      {
+        "initialValue": true,
+        "description": "Only active announcements will be displayed on the website",
+        "name": "isActive",
+        "type": "boolean",
+        "title": "Active"
+      },
+      {
+        "initialValue": false,
+        "description": "Featured announcements will be more prominently displayed",
+        "name": "isFeatured",
+        "type": "boolean",
+        "title": "Featured"
+      },
+      {
+        "name": "publishedAt",
+        "type": "datetime"
+      },
+      {
+        "description": "Optional: Announcement will automatically stop showing after this date",
+        "name": "expiresAt",
+        "type": "datetime"
+      }
+    ],
+    "name": "announcement",
+    "type": "document"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "name",
+        "type": "string",
+        "title": "Category Name"
+      },
+      {
+        "options": {
+          "source": "name",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "slug",
+        "type": "slug"
+      },
+      {
+        "rows": 3,
+        "name": "description",
+        "type": "text"
+      },
+      {
+        "options": {
+          "hotspot": true
+        },
+        "name": "image",
+        "type": "image",
+        "title": "Category Image"
+      },
+      {
+        "initialValue": true,
+        "description": "Only active categories will be displayed",
+        "name": "isActive",
+        "type": "boolean",
+        "title": "Active"
+      },
+      {
+        "initialValue": 0,
+        "description": "Lower numbers appear first",
+        "name": "sortOrder",
+        "type": "number"
+      }
+    ],
+    "name": "category",
+    "type": "document"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "title",
+        "type": "string",
+        "title": "Event Title"
+      },
+      {
+        "options": {
+          "source": "title",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "slug",
+        "type": "slug"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "description",
+        "type": "text"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "eventDate",
+        "type": "datetime",
+        "title": "Event Date & Time"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "location",
+        "type": "string"
+      },
+      {
+        "description": "Full address for the event location",
+        "name": "address",
+        "type": "text"
+      },
+      {
+        "description": "Event price in USD (leave empty if free)",
+        "name": "price",
+        "type": "number"
+      },
+      {
+        "description": "Maximum number of attendees (leave empty if unlimited)",
+        "name": "maxAttendees",
+        "type": "number"
+      },
+      {
+        "initialValue": true,
+        "description": "Only active events will be displayed on the website",
+        "name": "isActive",
+        "type": "boolean",
+        "title": "Active"
+      }
+    ],
+    "name": "event",
+    "type": "document"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "question",
+        "type": "string"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "answer",
+        "type": "text"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "General",
+              "value": "general"
+            },
+            {
+              "title": "Shipping",
+              "value": "shipping"
+            },
+            {
+              "title": "Subscriptions",
+              "value": "subscriptions"
+            },
+            {
+              "title": "Products",
+              "value": "products"
+            },
+            {
+              "title": "Returns",
+              "value": "returns"
+            },
+            {
+              "title": "Account",
+              "value": "account"
+            }
+          ]
+        },
+        "initialValue": "general",
+        "name": "category",
+        "type": "string"
+      },
+      {
+        "initialValue": 0,
+        "description": "Lower numbers appear first. Leave empty to use default ordering.",
+        "name": "sortOrder",
+        "type": "number"
+      },
+      {
+        "initialValue": true,
+        "description": "Only active FAQs will be displayed on the website",
+        "name": "isActive",
+        "type": "boolean",
+        "title": "Active"
+      }
+    ],
+    "name": "faq",
+    "type": "document",
+    "title": "FAQ"
+  },
+  {
+    "fields": [
+      {
+        "initialValue": "Vendetta Roasting",
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Main title shown in the hero section",
+        "name": "title",
+        "type": "string",
+        "title": "Site Title"
+      },
+      {
+        "rows": 3,
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Subtitle text shown below the main title in the hero section",
+        "name": "heroSubtitle",
+        "type": "text"
+      },
+      {
+        "initialValue": "Shop Coffee",
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Text for the primary call-to-action button",
+        "name": "heroCtaPrimary",
+        "type": "string",
+        "title": "Hero Primary Button Text"
+      },
+      {
+        "initialValue": "Subscribe",
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Text for the secondary call-to-action button",
+        "name": "heroCtaSecondary",
+        "type": "string",
+        "title": "Hero Secondary Button Text"
+      },
+      {
+        "initialValue": "Our Story",
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Title for the \"Our Story\" section",
+        "name": "aboutTitle",
+        "type": "string",
+        "title": "About Section Title"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "min",
+                "constraint": 1
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Paragraphs for the \"Our Story\" section",
+        "of": [
+          {
+            "fields": [
+              {
+                "rows": 4,
+                "name": "paragraph",
+                "type": "text"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "name": "aboutContent",
+        "type": "array",
+        "title": "About Section Content"
+      },
+      {
+        "initialValue": "Learn More",
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Text for the \"Learn More\" button in the about section",
+        "name": "aboutCtaText",
+        "type": "string",
+        "title": "About Section Button Text"
+      },
+      {
+        "initialValue": "Never Run Out of Great Coffee",
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Title for the subscription highlight section",
+        "name": "subscriptionTitle",
+        "type": "string",
+        "title": "Subscription Section Title"
+      },
+      {
+        "rows": 3,
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Description text for the subscription section",
+        "name": "subscriptionDescription",
+        "type": "text",
+        "title": "Subscription Section Description"
+      },
+      {
+        "initialValue": "Start a Subscription",
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Text for the subscription call-to-action button",
+        "name": "subscriptionCtaText",
+        "type": "string",
+        "title": "Subscription Section Button Text"
+      }
+    ],
+    "name": "homepage",
+    "type": "document",
+    "title": "Homepage Content"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "name",
+        "type": "string",
+        "title": "Product Name"
+      },
+      {
+        "options": {
+          "source": "name",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "slug",
+        "type": "slug"
+      },
+      {
+        "rows": 4,
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "description",
+        "type": "text"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "max",
+                "constraint": 500
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Brief description for product cards (max 500 characters)",
+        "name": "shortDescription",
+        "type": "string"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "min",
+                "constraint": 1
+              }
+            ],
+            "level": "error",
+            "message": "At least one image is required"
+          }
+        ],
+        "of": [
+          {
+            "options": {
+              "hotspot": true
+            },
+            "fields": [
+              {
+                "description": "Important for SEO and accessibility",
+                "name": "alt",
+                "type": "string",
+                "title": "Alt Text"
+              },
+              {
+                "initialValue": false,
+                "description": "Set as the main product image",
+                "name": "isPrimary",
+                "type": "boolean",
+                "title": "Primary Image"
+              }
+            ],
+            "type": "image"
+          }
+        ],
+        "name": "images",
+        "type": "array",
+        "title": "Product Images"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              },
+              {
+                "flag": "min",
+                "constraint": 0
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Regular customer price",
+        "name": "price",
+        "type": "number",
+        "title": "Price (USD)"
+      },
+      {
+        "description": "Price for wholesale customers",
+        "name": "wholesalePrice",
+        "type": "number",
+        "title": "Wholesale Price (USD)"
+      },
+      {
+        "description": "Stock Keeping Unit - unique product identifier",
+        "name": "sku",
+        "type": "string",
+        "title": "SKU"
+      },
+      {
+        "description": "Product category",
+        "to": [
+          {
+            "type": "category"
+          }
+        ],
+        "name": "category",
+        "type": "reference"
+      },
+      {
+        "description": "Product weight in grams",
+        "name": "weightGrams",
+        "type": "number",
+        "title": "Weight (grams)"
+      },
+      {
+        "description": "Coffee origin (e.g., Colombia, Ethiopia)",
+        "name": "origin",
+        "type": "string"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "Light",
+              "value": "Light"
+            },
+            {
+              "title": "Medium",
+              "value": "Medium"
+            },
+            {
+              "title": "Medium-Dark",
+              "value": "Medium-Dark"
+            },
+            {
+              "title": "Dark",
+              "value": "Dark"
+            }
+          ]
+        },
+        "name": "roastLevel",
+        "type": "string"
+      },
+      {
+        "description": "e.g., Chocolate, Caramel, Citrus",
+        "name": "flavorNotes",
+        "type": "string"
+      },
+      {
+        "initialValue": 0,
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "min",
+                "constraint": 0
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Current stock quantity",
+        "name": "inventoryQuantity",
+        "type": "number"
+      },
+      {
+        "initialValue": 10,
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "min",
+                "constraint": 0
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Alert when inventory falls below this number",
+        "name": "lowStockThreshold",
+        "type": "number"
+      },
+      {
+        "initialValue": true,
+        "description": "Only active products will be displayed on the website",
+        "name": "isActive",
+        "type": "boolean",
+        "title": "Active"
+      },
+      {
+        "initialValue": false,
+        "description": "Featured products appear prominently on the homepage",
+        "name": "isFeatured",
+        "type": "boolean",
+        "title": "Featured"
+      },
+      {
+        "description": "Title for search engines (leave empty to use product name)",
+        "name": "metaTitle",
+        "type": "string",
+        "title": "SEO Meta Title"
+      },
+      {
+        "rows": 2,
+        "description": "Description for search engines",
+        "name": "metaDescription",
+        "type": "text",
+        "title": "SEO Meta Description"
+      }
+    ],
+    "name": "product",
+    "type": "document"
+  }
+]
