@@ -12,10 +12,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const { orderId } = req.query;
+  
+  // Decode orderId if it's URL encoded
+  const decodedOrderId = typeof orderId === 'string' ? decodeURIComponent(orderId) : orderId;
 
   if (req.method === 'GET') {
     try {
       // Fetch order with customer info
+      // Try matching by UUID first, then by order_number
       const orderResult = await query(
         `SELECT 
           o.*,
@@ -24,8 +28,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           u.phone as customer_phone
         FROM orders o
         LEFT JOIN users u ON o.user_id = u.id
-        WHERE o.id = $1 OR o.order_number = $1`,
-        [orderId]
+        WHERE o.id::text = $1 OR o.order_number = $1`,
+        [decodedOrderId]
       );
 
       if (orderResult.rows.length === 0) {
@@ -99,12 +103,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       updateFields.push(`updated_at = NOW()`);
-      updateValues.push(orderId);
+      updateValues.push(decodedOrderId);
 
       const updateQuery = `
         UPDATE orders 
         SET ${updateFields.join(', ')}
-        WHERE id = $${paramIndex} OR order_number = $${paramIndex}
+        WHERE id::text = $${paramIndex} OR order_number = $${paramIndex}
         RETURNING *
       `;
 

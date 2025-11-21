@@ -44,20 +44,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const result = await query(ordersQuery, params);
 
-      // If database is not connected, return empty array with a message
-      if (!process.env.DATABASE_URL) {
-        return res.status(200).json({
-          success: true,
-          data: [],
-          total: 0,
-          message: 'Database not configured. Orders will appear here once DATABASE_URL is set.',
-        });
-      }
+      // Log for debugging
+      console.log(`Admin orders query returned ${result?.rows?.length || 0} orders`);
 
+      // Return results (empty array if no orders, which is fine)
       res.status(200).json({
         success: true,
-        data: result.rows || [],
-        total: result.rows?.length || 0,
+        data: result?.rows || [],
+        total: result?.rows?.length || 0,
       });
     } catch (error: any) {
       console.error('Error fetching orders:', error);

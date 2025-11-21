@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react'
 
 interface Order {
   id: string
+  order_number?: string
   date: string
-  status: 'delivered' | 'shipped' | 'processing' | 'cancelled'
+  status: 'delivered' | 'shipped' | 'processing' | 'pending' | 'cancelled' | 'refunded'
+  payment_status?: string
   total: number
   items: Array<{
     name: string
@@ -17,45 +19,49 @@ interface Order {
 export default function OrderHistory() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'delivered' | 'shipped' | 'processing' | 'cancelled'>('all')
+  const [filter, setFilter] = useState<'all' | 'delivered' | 'shipped' | 'processing' | 'pending' | 'cancelled'>('all')
+  const [lookupEmail, setLookupEmail] = useState('')
+  const [showEmailLookup, setShowEmailLookup] = useState(false)
+
+  const fetchOrders = async (email?: string) => {
+    try {
+      setLoading(true);
+      const url = email 
+        ? `/api/account/orders?email=${encodeURIComponent(email)}`
+        : '/api/account/orders';
+      
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log('Orders fetched:', data.data);
+        setOrders(data.data || []);
+        if (data.message) {
+          console.log('API message:', data.message);
+        }
+      } else {
+        console.error('Failed to fetch orders:', data.message);
+        setOrders([]);
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // TODO: Fetch orders from API
-    // Simulate loading and data
-    setTimeout(() => {
-      setOrders([
-        {
-          id: '12345',
-          date: '2024-12-15',
-          status: 'delivered',
-          total: 24.99,
-          items: [
-            { name: 'Signature Blend #1', quantity: 1, price: 18.99 },
-            { name: 'Coffee Mug', quantity: 1, price: 6.00 }
-          ]
-        },
-        {
-          id: '12344',
-          date: '2024-12-10',
-          status: 'delivered',
-          total: 18.99,
-          items: [
-            { name: 'Signature Blend #2', quantity: 1, price: 18.99 }
-          ]
-        },
-        {
-          id: '12343',
-          date: '2024-12-05',
-          status: 'shipped',
-          total: 35.98,
-          items: [
-            { name: 'Signature Blend #3', quantity: 2, price: 17.99 }
-          ]
-        }
-      ])
-      setLoading(false)
-    }, 1000)
+    fetchOrders();
   }, [])
+
+  const handleEmailLookup = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (lookupEmail) {
+      fetchOrders(lookupEmail);
+      setShowEmailLookup(false);
+    }
+  }
 
   const filteredOrders = orders.filter(order => 
     filter === 'all' || order.status === filter
@@ -143,6 +149,53 @@ export default function OrderHistory() {
               <p className="text-coffee">
                 Track your coffee orders and view order details.
               </p>
+              
+              {/* Email Lookup for Guest Users */}
+              {!showEmailLookup && orders.length === 0 && !loading && (
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800 mb-2">
+                    Not logged in? Enter the email you used during checkout to view your orders.
+                  </p>
+                  <button
+                    onClick={() => setShowEmailLookup(true)}
+                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    Look up orders by email →
+                  </button>
+                </div>
+              )}
+              
+              {showEmailLookup && (
+                <form onSubmit={handleEmailLookup} className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex gap-2">
+                    <input
+                      type="email"
+                      placeholder="Enter your email"
+                      value={lookupEmail}
+                      onChange={(e) => setLookupEmail(e.target.value)}
+                      className="flex-1 px-3 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    >
+                      Look Up
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowEmailLookup(false);
+                        setLookupEmail('');
+                        fetchOrders();
+                      }}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
 
             {/* Filter Tabs */}
@@ -150,9 +203,10 @@ export default function OrderHistory() {
               <div className="flex space-x-1 bg-white p-1 rounded-lg shadow-sm">
                 {[
                   { key: 'all', label: 'All Orders' },
-                  { key: 'delivered', label: 'Delivered' },
-                  { key: 'shipped', label: 'Shipped' },
+                  { key: 'pending', label: 'Pending' },
                   { key: 'processing', label: 'Processing' },
+                  { key: 'shipped', label: 'Shipped' },
+                  { key: 'delivered', label: 'Delivered' },
                   { key: 'cancelled', label: 'Cancelled' }
                 ].map(({ key, label }) => (
                   <button
@@ -199,7 +253,7 @@ export default function OrderHistory() {
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <h3 className="text-lg font-semibold text-coffee-dark">
-                          Order #{order.id}
+                          Order #{order.order_number || order.id}
                         </h3>
                         <p className="text-coffee">
                           Placed on {new Date(order.date).toLocaleDateString()}

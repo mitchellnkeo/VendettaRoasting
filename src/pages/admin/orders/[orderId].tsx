@@ -54,16 +54,14 @@ export default function AdminOrderDetail() {
     }
   }, [isAuthenticated, isAdmin, isLoading, router]);
 
-  useEffect(() => {
-    if (orderId && isAdmin) {
-      fetchOrder();
-    }
-  }, [orderId, isAdmin]);
-
   const fetchOrder = async () => {
+    if (!orderId) return;
+    
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/orders/${orderId}`);
+      // Decode orderId if it's URL encoded, then encode for the API call
+      const decodedId = decodeURIComponent(orderId as string);
+      const response = await fetch(`/api/admin/orders/${encodeURIComponent(decodedId)}`);
       const data = await response.json();
       
       if (data.success) {
@@ -85,12 +83,21 @@ export default function AdminOrderDetail() {
     }
   };
 
+  useEffect(() => {
+    if (orderId && isAdmin) {
+      fetchOrder();
+    }
+  }, [orderId, isAdmin]);
+
   const handleStatusUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!orderId) return;
+    
     setUpdating(true);
 
     try {
-      const response = await fetch(`/api/admin/orders/${orderId}`, {
+      const decodedId = decodeURIComponent(orderId as string);
+      const response = await fetch(`/api/admin/orders/${encodeURIComponent(decodedId)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(statusUpdate),
