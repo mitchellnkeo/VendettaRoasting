@@ -7,28 +7,87 @@ import { useAuth } from '@/lib/auth/AuthContext'
 export default function Account() {
   const { user } = useAuth();
   const [userData, setUserData] = useState({
-    firstName: user?.firstName || 'John',
-    lastName: user?.lastName || 'Doe',
-    email: user?.email || 'john@example.com',
-    memberSince: '2024-01-15'
+    firstName: '',
+    lastName: '',
+    email: '',
+    memberSince: ''
   })
+  const [recentOrders, setRecentOrders] = useState<any[]>([])
+  const [subscriptionStatus, setSubscriptionStatus] = useState<{status: string, nextDelivery: string, plan: string} | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // TODO: Fetch user data from API
-    // For now, use auth context data if available
-    if (user) {
-      setUserData({
-        firstName: user.firstName || userData.firstName,
-        lastName: user.lastName || userData.lastName,
-        email: user.email || userData.email,
-        memberSince: userData.memberSince
-      })
+    const fetchAccountData = async () => {
+      try {
+        setLoading(true)
+        
+        // Fetch user data from database
+        if (user?.email) {
+          const userResponse = await fetch(`/api/users?email=${encodeURIComponent(user.email)}`)
+          const userData_result = await userResponse.json()
+          
+          if (userData_result.success && userData_result.data) {
+            const dbUser = userData_result.data
+            setUserData({
+              firstName: dbUser.first_name || user.name?.split(' ')[0] || '',
+              lastName: dbUser.last_name || user.name?.split(' ').slice(1).join(' ') || '',
+              email: dbUser.email || user.email || '',
+              memberSince: dbUser.created_at || new Date().toISOString()
+            })
+          } else {
+            // Fallback to auth context
+            setUserData({
+              firstName: user.name?.split(' ')[0] || '',
+              lastName: user.name?.split(' ').slice(1).join(' ') || '',
+              email: user.email || '',
+              memberSince: new Date().toISOString()
+            })
+          }
+        } else {
+          setUserData({
+            firstName: user?.name?.split(' ')[0] || '',
+            lastName: user?.name?.split(' ').slice(1).join(' ') || '',
+            email: user?.email || '',
+            memberSince: new Date().toISOString()
+          })
+        }
+
+        // Fetch recent orders
+        try {
+          const ordersResponse = await fetch('/api/account/orders')
+          const ordersData = await ordersResponse.json()
+          if (ordersData.success) {
+            setRecentOrders(ordersData.data.slice(0, 2) || [])
+          }
+        } catch (err) {
+          console.error('Error fetching recent orders:', err)
+        }
+
+        // Fetch subscription status
+        try {
+          const subResponse = await fetch('/api/subscriptions')
+          const subData = await subResponse.json()
+          if (subData.success && subData.data && subData.data.length > 0) {
+            const activeSub = subData.data.find((s: any) => s.status === 'active')
+            if (activeSub) {
+              setSubscriptionStatus({
+                status: 'active',
+                nextDelivery: activeSub.nextDelivery || activeSub.currentPeriodEnd || '',
+                plan: activeSub.planId || 'Monthly Coffee Box'
+              })
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching subscription:', err)
+        }
+      } catch (err) {
+        console.error('Error fetching account data:', err)
+      } finally {
+        setLoading(false)
+      }
     }
-    // Simulate loading
-    setTimeout(() => {
-      setLoading(false)
-    }, 500)
+
+    fetchAccountData()
   }, [user])
 
   if (loading) {
@@ -111,47 +170,81 @@ export default function Account() {
               {/* Recent Orders */}
               <div className="bg-white p-6 rounded-lg shadow-sm">
                 <h3 className="text-lg font-semibold text-coffee-dark mb-4">Recent Orders</h3>
-                <div className="space-y-3">
+                {recentOrders.length > 0 ? (
+                  <>
+                    <div className="space-y-3">
+                      {recentOrders.map((order) => (
+                        <div key={order.id || order.order_number} className="text-coffee">
+                          <p className="font-medium">Order #{order.order_number || order.id}</p>
+                          <p className="text-sm text-coffee-light">
+                            {new Date(order.date || order.created_at).toLocaleDateString()} - ${(order.total || order.total_amount || 0).toFixed(2)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    <Link 
+                      href="/account/orders"
+                      className="inline-block mt-4 text-coffee hover:text-coffee-light font-medium"
+                    >
+                      View All Orders →
+                    </Link>
+                  </>
+                ) : (
                   <div className="text-coffee">
-                    <p className="font-medium">Order #12345</p>
-                    <p className="text-sm text-coffee-light">Dec 15, 2024 - $24.99</p>
+                    <p className="text-sm mb-4">No recent orders</p>
+                    <Link 
+                      href="/shop"
+                      className="inline-block text-coffee hover:text-coffee-light font-medium"
+                    >
+                      Start Shopping →
+                    </Link>
                   </div>
-                  <div className="text-coffee">
-                    <p className="font-medium">Order #12344</p>
-                    <p className="text-sm text-coffee-light">Dec 10, 2024 - $18.99</p>
-                  </div>
-                </div>
-                <Link 
-                  href="/account/orders"
-                  className="inline-block mt-4 text-coffee hover:text-coffee-light font-medium"
-                >
-                  View All Orders →
-                </Link>
+                )}
               </div>
 
               {/* Subscription Status */}
               <div className="bg-white p-6 rounded-lg shadow-sm">
                 <h3 className="text-lg font-semibold text-coffee-dark mb-4">Subscription</h3>
-                <div className="space-y-2">
-                  <p className="text-coffee">
-                    <span className="font-medium">Status:</span> 
-                    <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                      Active
-                    </span>
-                  </p>
-                  <p className="text-coffee">
-                    <span className="font-medium">Next delivery:</span> Jan 15, 2025
-                  </p>
-                  <p className="text-coffee">
-                    <span className="font-medium">Plan:</span> Monthly Coffee Box
-                  </p>
-                </div>
-                <Link 
-                  href="/subscriptions/manage"
-                  className="inline-block mt-4 text-coffee hover:text-coffee-light font-medium"
-                >
-                  Manage Subscription →
-                </Link>
+                {subscriptionStatus ? (
+                  <>
+                    <div className="space-y-2">
+                      <p className="text-coffee">
+                        <span className="font-medium">Status:</span> 
+                        <span className={`ml-2 px-2 py-1 rounded-full text-sm ${
+                          subscriptionStatus.status === 'active' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {subscriptionStatus.status.charAt(0).toUpperCase() + subscriptionStatus.status.slice(1)}
+                        </span>
+                      </p>
+                      {subscriptionStatus.nextDelivery && (
+                        <p className="text-coffee">
+                          <span className="font-medium">Next delivery:</span> {new Date(subscriptionStatus.nextDelivery).toLocaleDateString()}
+                        </p>
+                      )}
+                      <p className="text-coffee">
+                        <span className="font-medium">Plan:</span> {subscriptionStatus.plan}
+                      </p>
+                    </div>
+                    <Link 
+                      href="/subscriptions/manage"
+                      className="inline-block mt-4 text-coffee hover:text-coffee-light font-medium"
+                    >
+                      Manage Subscription →
+                    </Link>
+                  </>
+                ) : (
+                  <div className="text-coffee">
+                    <p className="text-sm mb-4">No active subscription</p>
+                    <Link 
+                      href="/subscriptions"
+                      className="inline-block text-coffee hover:text-coffee-light font-medium"
+                    >
+                      View Plans →
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
 

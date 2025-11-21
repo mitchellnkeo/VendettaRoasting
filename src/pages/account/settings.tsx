@@ -33,22 +33,75 @@ export default function AccountSettings() {
   })
 
   useEffect(() => {
-    // TODO: Fetch user data from API
-    setTimeout(() => {
-      setFormData({
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        phone: user.phone,
-        street: user.address.street,
-        city: user.address.city,
-        state: user.address.state,
-        zipCode: user.address.zipCode,
-        country: user.address.country
-      })
-      setLoading(false)
-    }, 1000)
-  }, [])
+    const fetchUserData = async () => {
+      try {
+        setLoading(true)
+        
+        if (user?.email) {
+          const response = await fetch(`/api/users?email=${encodeURIComponent(user.email)}`)
+          const data = await response.json()
+          
+          if (data.success && data.data) {
+            const dbUser = data.data
+            setFormData({
+              firstName: dbUser.first_name || user.name?.split(' ')[0] || '',
+              lastName: dbUser.last_name || user.name?.split(' ').slice(1).join(' ') || '',
+              email: dbUser.email || user.email || '',
+              phone: dbUser.phone || '',
+              street: '',
+              city: '',
+              state: '',
+              zipCode: '',
+              country: ''
+            })
+          } else {
+            // Fallback to auth context
+            setFormData({
+              firstName: user.name?.split(' ')[0] || '',
+              lastName: user.name?.split(' ').slice(1).join(' ') || '',
+              email: user.email || '',
+              phone: '',
+              street: '',
+              city: '',
+              state: '',
+              zipCode: '',
+              country: ''
+            })
+          }
+        } else {
+          setFormData({
+            firstName: user?.name?.split(' ')[0] || '',
+            lastName: user?.name?.split(' ').slice(1).join(' ') || '',
+            email: user?.email || '',
+            phone: '',
+            street: '',
+            city: '',
+            state: '',
+            zipCode: '',
+            country: ''
+          })
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error)
+        // Fallback to auth context
+        setFormData({
+          firstName: user?.name?.split(' ')[0] || '',
+          lastName: user?.name?.split(' ').slice(1).join(' ') || '',
+          email: user?.email || '',
+          phone: '',
+          street: '',
+          city: '',
+          state: '',
+          zipCode: '',
+          country: ''
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUserData()
+  }, [user])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -62,14 +115,27 @@ export default function AccountSettings() {
     setMessage(null)
 
     try {
-      // TODO: Update user data via API
-      console.log('Updating user data:', formData)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      setMessage({ type: 'success', text: 'Account updated successfully!' })
+      const response = await fetch('/api/users', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setMessage({ type: 'success', text: 'Account updated successfully!' })
+      } else {
+        setMessage({ type: 'error', text: data.message || 'Failed to update account. Please try again.' })
+      }
     } catch (error) {
+      console.error('Error updating account:', error)
       setMessage({ type: 'error', text: 'Failed to update account. Please try again.' })
     } finally {
       setSaving(false)

@@ -28,36 +28,22 @@ export default function SubscriptionManagement() {
     const fetchSubscriptions = async () => {
       try {
         setLoading(true)
+        setError(null)
         
-        // In a real application, you would fetch from /api/subscriptions
-        // For now, we'll use mock data
-        const mockSubscriptions: Subscription[] = [
-          {
-            id: 'sub_123456789',
-            planId: 'premium',
-            status: 'active',
-            currentPeriodStart: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(), // 15 days ago
-            currentPeriodEnd: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(), // 15 days from now
-            nextDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days from now
-            deliveryFrequency: 'monthly',
-            items: [
-              {
-                productId: 'prod_premium_coffee',
-                name: 'Premium Coffee Subscription',
-                quantity: 1,
-                price: 39.99
-              }
-            ]
-          }
-        ]
-
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        // Fetch subscriptions from API
+        const response = await fetch('/api/subscriptions')
+        const data = await response.json()
         
-        setSubscriptions(mockSubscriptions)
+        if (data.success) {
+          setSubscriptions(data.data || [])
+        } else {
+          setError(data.message || 'Failed to load subscriptions')
+          setSubscriptions([])
+        }
       } catch (err) {
         console.error('Error fetching subscriptions:', err)
-        setError('Failed to load subscriptions')
+        setError('Failed to load subscriptions. Please try again.')
+        setSubscriptions([])
       } finally {
         setLoading(false)
       }

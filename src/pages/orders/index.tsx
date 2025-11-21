@@ -24,40 +24,31 @@ export default function OrdersPage() {
     const fetchOrders = async () => {
       try {
         setLoading(true)
+        setError(null)
         
-        // In a real application, you would fetch from /api/orders
-        // For now, we'll simulate with mock data
-        const mockOrders: Order[] = [
-          {
-            id: 'ORD-1703123456789-abc123',
-            status: 'shipped',
-            total: 45.98,
-            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
-            itemCount: 2,
-            items: [
-              { name: 'Ethiopian Yirgacheffe', quantity: 1, price: 18.99 },
-              { name: 'Colombian Supremo', quantity: 1, price: 16.99 }
-            ]
-          },
-          {
-            id: 'ORD-1703123456788-def456',
-            status: 'delivered',
-            total: 22.50,
-            createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 1 week ago
-            itemCount: 1,
-            items: [
-              { name: 'Guatemala Antigua', quantity: 1, price: 22.50 }
-            ]
-          }
-        ]
-
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        // Fetch orders from API
+        const response = await fetch('/api/account/orders')
+        const data = await response.json()
         
-        setOrders(mockOrders)
+        if (data.success) {
+          // Transform API data to match component interface
+          const transformedOrders: Order[] = data.data.map((order: any) => ({
+            id: order.order_number || order.id,
+            status: order.status,
+            total: order.total || order.total_amount,
+            createdAt: order.date || order.created_at,
+            itemCount: order.items?.length || 0,
+            items: order.items || []
+          }))
+          setOrders(transformedOrders)
+        } else {
+          setError(data.message || 'Failed to load orders')
+          setOrders([])
+        }
       } catch (err) {
         console.error('Error fetching orders:', err)
-        setError('Failed to load orders')
+        setError('Failed to load orders. Please try again.')
+        setOrders([])
       } finally {
         setLoading(false)
       }

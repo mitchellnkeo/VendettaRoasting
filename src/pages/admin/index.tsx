@@ -1,13 +1,31 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { useAuth } from '@/lib/auth/AuthContext';
 import Link from 'next/link';
 
+interface Stats {
+  totalSales: number;
+  pendingOrders: number;
+  totalCustomers: number;
+  activeSubscriptions: number;
+  recentOrders: Array<{
+    id: string;
+    order_number: string;
+    status: string;
+    total_amount: number;
+    created_at: string;
+    customer_email: string;
+    customer_name: string;
+  }>;
+}
+
 export default function AdminDashboard() {
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
   const router = useRouter();
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !isAdmin)) {
@@ -15,8 +33,50 @@ export default function AdminDashboard() {
     }
   }, [isAuthenticated, isAdmin, isLoading, router]);
 
-  if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  useEffect(() => {
+    if (isAdmin) {
+      fetchStats();
+    }
+  }, [isAdmin]);
+
+  const fetchStats = async () => {
+    try {
+      setLoadingStats(true);
+      const response = await fetch('/api/admin/stats');
+      const data = await response.json();
+      
+      if (data.success) {
+        setStats(data.data);
+      } else {
+        console.error('Failed to fetch stats:', data.message);
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      pending: 'bg-yellow-100 text-yellow-800',
+      processing: 'bg-blue-100 text-blue-800',
+      shipped: 'bg-indigo-100 text-indigo-800',
+      delivered: 'bg-green-100 text-green-800',
+      cancelled: 'bg-red-100 text-red-800',
+      refunded: 'bg-purple-100 text-purple-800',
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  if (isLoading || loadingStats) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-screen-admin">
+          <p className="text-coffee-dark">Loading dashboard...</p>
+        </div>
+      </AdminLayout>
+    );
   }
 
   if (!isAuthenticated || !isAdmin) {
@@ -47,7 +107,9 @@ export default function AdminDashboard() {
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 truncate">Total Sales</dt>
                       <dd>
-                        <div className="text-lg font-medium text-coffee-dark">$24,000</div>
+                        <div className="text-lg font-medium text-coffee-dark">
+                          ${stats?.totalSales.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                        </div>
                       </dd>
                     </dl>
                   </div>
@@ -75,7 +137,7 @@ export default function AdminDashboard() {
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 truncate">Pending Orders</dt>
                       <dd>
-                        <div className="text-lg font-medium text-coffee-dark">12</div>
+                        <div className="text-lg font-medium text-coffee-dark">{stats?.pendingOrders || 0}</div>
                       </dd>
                     </dl>
                   </div>
@@ -103,7 +165,7 @@ export default function AdminDashboard() {
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 truncate">Total Customers</dt>
                       <dd>
-                        <div className="text-lg font-medium text-coffee-dark">248</div>
+                        <div className="text-lg font-medium text-coffee-dark">{stats?.totalCustomers || 0}</div>
                       </dd>
                     </dl>
                   </div>
@@ -131,7 +193,7 @@ export default function AdminDashboard() {
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 truncate">Active Subscriptions</dt>
                       <dd>
-                        <div className="text-lg font-medium text-coffee-dark">89</div>
+                        <div className="text-lg font-medium text-coffee-dark">{stats?.activeSubscriptions || 0}</div>
                       </dd>
                     </dl>
                   </div>
@@ -182,41 +244,40 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {[
-                    { id: 'ORD-001', customer: 'John Smith', date: '2025-01-12', status: 'Processing', total: '$56.00' },
-                    { id: 'ORD-002', customer: 'Sarah Johnson', date: '2025-01-12', status: 'Shipped', total: '$89.99' },
-                    { id: 'ORD-003', customer: 'Michael Brown', date: '2025-01-11', status: 'Delivered', total: '$124.50' },
-                    { id: 'ORD-004', customer: 'Emily Davis', date: '2025-01-11', status: 'Processing', total: '$42.75' },
-                    { id: 'ORD-005', customer: 'David Wilson', date: '2025-01-10', status: 'Delivered', total: '$78.25' },
-                  ].map((order) => (
-                    <tr key={order.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-coffee-dark">
-                        {order.id}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {order.customer}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {order.date}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                          ${order.status === 'Processing' ? 'bg-yellow-100 text-yellow-800' : 
-                            order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' : 
-                            'bg-green-100 text-green-800'}`}>
-                          {order.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {order.total}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Link href={`/admin/orders/${order.id}`} className="text-coffee hover:text-coffee-light">
-                          View
-                        </Link>
+                  {stats?.recentOrders && stats.recentOrders.length > 0 ? (
+                    stats.recentOrders.map((order) => (
+                      <tr key={order.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-coffee-dark">
+                          {order.order_number}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {order.customer_name || 'Guest'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(order.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}>
+                            {order.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          ${parseFloat(order.total_amount.toString()).toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <Link href={`/admin/orders/${order.id}`} className="text-coffee hover:text-coffee-light">
+                            View
+                          </Link>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                        No recent orders
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
