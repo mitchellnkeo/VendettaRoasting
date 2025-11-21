@@ -94,11 +94,50 @@ export default function Wholesale() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real application, this would submit the form data to the server
-    console.log('Form submitted:', formData);
-    alert('Thank you for your interest in our wholesale program! We will review your application and get back to you soon.');
+    setSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const response = await fetch('/api/wholesale/apply', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSubmitSuccess(true);
+        setFormData({
+          businessName: '',
+          contactName: '',
+          email: '',
+          phone: '',
+          businessAddress: '',
+          businessType: '',
+          message: ''
+        });
+        // Reset success message after 10 seconds
+        setTimeout(() => {
+          setSubmitSuccess(false);
+        }, 10000);
+      } else {
+        setSubmitError(data.message || 'Failed to submit application. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting wholesale application:', error);
+      setSubmitError('An error occurred. Please try again or contact us directly.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (loading || !content) {
@@ -185,6 +224,19 @@ export default function Wholesale() {
             <div className="lg:w-1/2">
               <div className="bg-white p-8 rounded-lg shadow-md">
                 <h2 className="text-2xl font-bold text-coffee-dark mb-6">Apply for Wholesale Account</h2>
+                
+                {submitSuccess && (
+                  <div className="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                    Thank you for your interest! We'll review your application and get back to you within 2-3 business days.
+                  </div>
+                )}
+                
+                {submitError && (
+                  <div className="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    {submitError}
+                  </div>
+                )}
+                
                 <form onSubmit={handleSubmit}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div>
@@ -285,9 +337,10 @@ export default function Wholesale() {
 
                   <button
                     type="submit"
-                    className="w-full bg-coffee hover:bg-coffee-light text-cream-light py-3 rounded-md transition-colors"
+                    disabled={submitting}
+                    className="w-full bg-coffee hover:bg-coffee-light text-cream-light py-3 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Submit Application
+                    {submitting ? 'Submitting...' : 'Submit Application'}
                   </button>
                 </form>
               </div>
