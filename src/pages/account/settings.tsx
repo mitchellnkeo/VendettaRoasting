@@ -1,21 +1,10 @@
 import Head from 'next/head'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import { useAuth } from '@/lib/auth/AuthContext'
 
 export default function AccountSettings() {
-  const [user, setUser] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john@example.com',
-    phone: '+1 (555) 123-4567',
-    address: {
-      street: '123 Coffee Street',
-      city: 'Seattle',
-      state: 'WA',
-      zipCode: '98101',
-      country: 'United States'
-    }
-  })
+  const { user: authUser } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
@@ -37,16 +26,16 @@ export default function AccountSettings() {
       try {
         setLoading(true)
         
-        if (user?.email) {
-          const response = await fetch(`/api/users?email=${encodeURIComponent(user.email)}`)
+        if (authUser?.email) {
+          const response = await fetch(`/api/users?email=${encodeURIComponent(authUser.email)}`)
           const data = await response.json()
           
           if (data.success && data.data) {
             const dbUser = data.data
             setFormData({
-              firstName: dbUser.first_name || user.name?.split(' ')[0] || '',
-              lastName: dbUser.last_name || user.name?.split(' ').slice(1).join(' ') || '',
-              email: dbUser.email || user.email || '',
+              firstName: dbUser.first_name || authUser.name?.split(' ')[0] || '',
+              lastName: dbUser.last_name || authUser.name?.split(' ').slice(1).join(' ') || '',
+              email: dbUser.email || authUser.email || '',
               phone: dbUser.phone || '',
               street: '',
               city: '',
@@ -57,9 +46,9 @@ export default function AccountSettings() {
           } else {
             // Fallback to auth context
             setFormData({
-              firstName: user.name?.split(' ')[0] || '',
-              lastName: user.name?.split(' ').slice(1).join(' ') || '',
-              email: user.email || '',
+              firstName: authUser.name?.split(' ')[0] || '',
+              lastName: authUser.name?.split(' ').slice(1).join(' ') || '',
+              email: authUser.email || '',
               phone: '',
               street: '',
               city: '',
@@ -70,9 +59,9 @@ export default function AccountSettings() {
           }
         } else {
           setFormData({
-            firstName: user?.name?.split(' ')[0] || '',
-            lastName: user?.name?.split(' ').slice(1).join(' ') || '',
-            email: user?.email || '',
+            firstName: authUser?.name?.split(' ')[0] || '',
+            lastName: authUser?.name?.split(' ').slice(1).join(' ') || '',
+            email: authUser?.email || '',
             phone: '',
             street: '',
             city: '',
@@ -85,9 +74,9 @@ export default function AccountSettings() {
         console.error('Error fetching user data:', error)
         // Fallback to auth context
         setFormData({
-          firstName: user?.name?.split(' ')[0] || '',
-          lastName: user?.name?.split(' ').slice(1).join(' ') || '',
-          email: user?.email || '',
+          firstName: authUser?.name?.split(' ')[0] || '',
+          lastName: authUser?.name?.split(' ').slice(1).join(' ') || '',
+          email: authUser?.email || '',
           phone: '',
           street: '',
           city: '',
@@ -101,7 +90,7 @@ export default function AccountSettings() {
     }
 
     fetchUserData()
-  }, [user])
+  }, [authUser])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target

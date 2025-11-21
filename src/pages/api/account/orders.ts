@@ -86,7 +86,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Fetch order items for each order
     const ordersWithItems = await Promise.all(
-      ordersResult.rows.map(async (order) => {
+      ordersResult.rows.map(async (order: any) => {
         const itemsResult = await query(
           `SELECT 
             product_name,

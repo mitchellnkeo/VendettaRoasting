@@ -70,9 +70,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Apply sorting
-    const sortBy = sort_by || 'created_at';
-    const sortOrder = sort_order || 'desc';
-    productsQuery += ` ORDER BY p.${sortBy} ${sortOrder.toUpperCase()}`;
+    const sortBy = (sort_by && typeof sort_by === 'string') ? sort_by : 'created_at';
+    const sortOrderValue = (sort_order && typeof sort_order === 'string') ? sort_order : 'desc';
+    const sortOrder = sortOrderValue.toUpperCase();
+    productsQuery += ` ORDER BY p.${sortBy} ${sortOrder}`;
 
     // Apply limit and offset
     if (limit) {
