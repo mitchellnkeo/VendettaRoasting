@@ -15,5 +15,11 @@ export default defineConfig({
   schema: {
     types: schemaTypes,
   },
+
+  // Configure API settings
+  api: {
+    projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'pyoyob4y',
+    dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
+  },
 });
 
