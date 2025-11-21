@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { sanityClient } from '../../../lib/sanity';
+import { sanityClient, urlFor } from '../../../lib/sanity';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -11,6 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const query = `*[_type == "homepage"][0] {
       title,
       heroSubtitle,
+      heroImage,
       heroCtaPrimary,
       heroCtaSecondary,
       aboutTitle,
@@ -30,6 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         data: {
           title: 'Vendetta Roasting',
           heroSubtitle: 'Crafting exceptional coffee with passion and precision',
+          heroImage: null,
           heroCtaPrimary: 'Shop Coffee',
           heroCtaSecondary: 'Subscribe',
           aboutTitle: 'Our Story',
@@ -52,9 +54,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
+    // Transform hero image if it exists
+    const transformedData = {
+      ...homepage,
+      heroImage: homepage.heroImage ? urlFor(homepage.heroImage).width(1920).height(1080).url() : null,
+    };
+
     res.status(200).json({
       success: true,
-      data: homepage,
+      data: transformedData,
     });
   } catch (error) {
     console.error('Error fetching homepage content:', error);

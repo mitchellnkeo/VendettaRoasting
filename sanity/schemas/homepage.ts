@@ -23,6 +23,15 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'heroImage',
+      title: 'Hero Background Image',
+      type: 'image',
+      description: 'Optional background image for the hero section. If not provided, a solid color background will be used.',
+      options: {
+        hotspot: true,
+      },
+    }),
+    defineField({
       name: 'heroCtaPrimary',
       title: 'Hero Primary Button Text',
       type: 'string',

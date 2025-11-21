@@ -10,6 +10,7 @@ const inter = Inter({ subsets: ['latin'] })
 interface HomepageContent {
   title: string
   heroSubtitle: string
+  heroImage: string | null
   heroCtaPrimary: string
   heroCtaSecondary: string
   aboutTitle: string
@@ -47,6 +48,7 @@ export default function Home() {
   const defaultContent: HomepageContent = {
     title: 'Vendetta Roasting',
     heroSubtitle: 'Crafting exceptional coffee with passion and precision',
+    heroImage: null,
     heroCtaPrimary: 'Shop Coffee',
     heroCtaSecondary: 'Subscribe',
     aboutTitle: 'Our Story',
@@ -83,8 +85,22 @@ export default function Home() {
       
       {/* Hero Section */}
       <section className="relative h-[80vh] bg-coffee-dark flex items-center">
+        {/* Background Image */}
+        {displayContent.heroImage && (
+          <div className="absolute inset-0 z-0">
+            <Image
+              src={displayContent.heroImage}
+              alt={displayContent.title}
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+        )}
+        {/* Overlay */}
         <div className="absolute inset-0 bg-black opacity-50 z-10"></div>
-        <div className="container mx-auto px-4 z-20 text-center">
+        {/* Content */}
+        <div className="container mx-auto px-4 z-20 text-center relative">
           <h1 className="text-5xl md:text-6xl font-bold text-cream-light mb-6">
             {displayContent.title}
           </h1>
