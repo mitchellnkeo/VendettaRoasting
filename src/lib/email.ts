@@ -531,3 +531,93 @@ export const sendEmail = async (emailData: EmailData): Promise<boolean> => {
     return false
   }
 }
+
+// Email template for low stock alert (to admin)
+export interface LowStockAlertData {
+  products: Array<{
+    name: string;
+    sku: string;
+    currentInventory: number;
+    threshold: number;
+  }>;
+}
+
+export const createLowStockAlertEmail = (data: LowStockAlertData): EmailData => {
+  const { products } = data;
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Low Stock Alert - Vendetta Roasting</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #ff6b6b; color: white; padding: 20px; text-align: center; }
+        .content { background-color: #f9f9f9; padding: 30px; }
+        .product { background-color: white; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #ff6b6b; }
+        .product-name { font-weight: bold; color: #8B4513; }
+        .inventory { color: #ff6b6b; font-weight: bold; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+        .button { display: inline-block; background-color: #8B4513; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>⚠️ Low Stock Alert</h1>
+          <h2>Vendetta Roasting</h2>
+        </div>
+        
+        <div class="content">
+          <p>The following products are running low on inventory:</p>
+          
+          ${products.map(product => `
+            <div class="product">
+              <div class="product-name">${product.name}</div>
+              <div>SKU: ${product.sku}</div>
+              <div class="inventory">Current Stock: ${product.currentInventory} (Threshold: ${product.threshold})</div>
+            </div>
+          `).join('')}
+          
+          <p style="margin-top: 30px;">
+            <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/admin/products" class="button">
+              View Products in Admin
+            </a>
+          </p>
+        </div>
+        
+        <div class="footer">
+          <p>Vendetta Roasting - Premium Coffee Roasters</p>
+          <p>This is an automated alert. Please review and restock as needed.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const text = `
+    Low Stock Alert - Vendetta Roasting
+    
+    The following products are running low on inventory:
+    
+    ${products.map(product => `
+    ${product.name} (SKU: ${product.sku})
+    Current Stock: ${product.currentInventory} (Threshold: ${product.threshold})
+    `).join('\n')}
+    
+    View products in admin: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/admin/products
+  `;
+
+  return {
+    to: adminEmail,
+    from: fromEmail,
+    subject: `Low Stock Alert: ${products.length} Product${products.length > 1 ? 's' : ''} Need Restocking`,
+    html,
+    text
+  }
+}

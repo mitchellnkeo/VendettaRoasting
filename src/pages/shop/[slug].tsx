@@ -45,12 +45,49 @@ export default function ProductDetail() {
   const handleAddToCart = async () => {
     if (!product) return
 
+    // Check if product is out of stock
+    if (product.inventory_quantity <= 0) {
+      setCartMessage('This product is currently out of stock.')
+      setTimeout(() => setCartMessage(null), 3000)
+      return
+    }
+
+    // Check if requested quantity exceeds available inventory
+    if (quantity > product.inventory_quantity) {
+      setCartMessage(`Only ${product.inventory_quantity} ${product.inventory_quantity === 1 ? 'item' : 'items'} available in stock.`)
+      setTimeout(() => setCartMessage(null), 3000)
+      return
+    }
+
     setAddingToCart(true)
     setCartMessage(null)
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // Check inventory before adding (double-check)
+      const inventoryResponse = await fetch('/api/inventory/check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity: quantity
+        })
+      });
+
+      const inventoryData = await inventoryResponse.json();
+
+      if (!inventoryData.success || !inventoryData.data.available) {
+        const availableQty = inventoryData.data?.availableQuantity || 0;
+        if (availableQty > 0) {
+          setCartMessage(`Only ${availableQty} ${availableQty === 1 ? 'item' : 'items'} available. Please adjust quantity.`)
+        } else {
+          setCartMessage('This product is currently out of stock.')
+        }
+        setTimeout(() => setCartMessage(null), 3000)
+        setAddingToCart(false)
+        return
+      }
 
       // Add item to cart
       for (let i = 0; i < quantity; i++) {
@@ -68,7 +105,9 @@ export default function ProductDetail() {
       // Clear message after 3 seconds
       setTimeout(() => setCartMessage(null), 3000)
     } catch (error) {
+      console.error('Error adding to cart:', error)
       setCartMessage('Failed to add item to cart. Please try again.')
+      setTimeout(() => setCartMessage(null), 3000)
     } finally {
       setAddingToCart(false)
     }
@@ -234,16 +273,28 @@ export default function ProductDetail() {
                   <select
                     id="quantity"
                     value={quantity}
-                    onChange={(e) => setQuantity(parseInt(e.target.value))}
+                    onChange={(e) => {
+                      const newQuantity = parseInt(e.target.value);
+                      const maxQuantity = Math.min(product.inventory_quantity || 0, 5);
+                      setQuantity(Math.min(newQuantity, maxQuantity));
+                    }}
                     className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-coffee"
                     disabled={product.inventory_quantity === 0}
                   >
-                    {[1, 2, 3, 4, 5].map((num) => (
+                    {Array.from({ length: Math.min(product.inventory_quantity || 0, 5) }, (_, i) => i + 1).map((num) => (
                       <option key={num} value={num}>
                         {num}
                       </option>
                     ))}
+                    {product.inventory_quantity === 0 && (
+                      <option value={0}>Out of Stock</option>
+                    )}
                   </select>
+                  {product.inventory_quantity > 0 && product.inventory_quantity < 5 && (
+                    <span className="text-sm text-coffee">
+                      (Only {product.inventory_quantity} available)
+                    </span>
+                  )}
                 </div>
 
                 {/* Success/Error Message */}

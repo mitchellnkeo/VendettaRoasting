@@ -21,11 +21,21 @@ interface Stats {
   }>;
 }
 
+interface LowStockProduct {
+  _id: string;
+  name: string;
+  sku: string;
+  inventoryQuantity: number;
+  lowStockThreshold: number;
+}
+
 export default function AdminDashboard() {
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
+  const [lowStockProducts, setLowStockProducts] = useState<LowStockProduct[]>([]);
+  const [loadingLowStock, setLoadingLowStock] = useState(true);
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !isAdmin)) {
@@ -36,6 +46,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (isAdmin) {
       fetchStats();
+      fetchLowStockProducts();
     }
   }, [isAdmin]);
 
@@ -54,6 +65,47 @@ export default function AdminDashboard() {
       console.error('Error fetching stats:', error);
     } finally {
       setLoadingStats(false);
+    }
+  };
+
+  const fetchLowStockProducts = async () => {
+    try {
+      setLoadingLowStock(true);
+      const response = await fetch('/api/admin/inventory/low-stock?threshold=10');
+      const data = await response.json();
+      
+      if (data.success) {
+        setLowStockProducts(data.data || []);
+      } else {
+        console.error('Failed to fetch low stock products:', data.message);
+      }
+    } catch (error) {
+      console.error('Error fetching low stock products:', error);
+    } finally {
+      setLoadingLowStock(false);
+    }
+  };
+
+  const handleSendLowStockAlert = async () => {
+    try {
+      const response = await fetch('/api/admin/inventory/check-low-stock', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ threshold: 10 }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        alert(data.message || 'Low stock alert sent successfully');
+      } else {
+        alert('Failed to send low stock alert');
+      }
+    } catch (error) {
+      console.error('Error sending low stock alert:', error);
+      alert('Error sending low stock alert');
     }
   };
 
@@ -208,6 +260,52 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
+
+          {/* Low Stock Products */}
+          {lowStockProducts.length > 0 && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center">
+                  <svg className="h-6 w-6 text-yellow-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <h2 className="text-lg font-semibold text-yellow-800">
+                    Low Stock Alert ({lowStockProducts.length} {lowStockProducts.length === 1 ? 'product' : 'products'})
+                  </h2>
+                </div>
+                <button
+                  onClick={handleSendLowStockAlert}
+                  className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 text-sm font-medium"
+                >
+                  Send Email Alert
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {lowStockProducts.map((product) => (
+                  <div key={product._id} className="bg-white p-4 rounded-md border border-yellow-300">
+                    <div className="font-medium text-coffee-dark">{product.name}</div>
+                    <div className="text-sm text-gray-600">SKU: {product.sku || 'N/A'}</div>
+                    <div className="text-sm mt-1">
+                      <span className="font-semibold text-red-600">
+                        Stock: {product.inventoryQuantity}
+                      </span>
+                      <span className="text-gray-500 ml-2">
+                        (Threshold: {product.lowStockThreshold || 10})
+                      </span>
+                    </div>
+                    <Link 
+                      href={`https://vendetta-roasting.sanity.studio/desk/product;${product._id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-coffee hover:text-coffee-light mt-2 inline-block"
+                    >
+                      Edit in Sanity →
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Recent Orders */}
           <div className="bg-white shadow rounded-lg">

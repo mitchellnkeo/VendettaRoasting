@@ -59,12 +59,37 @@ export default function Shop() {
 
   // Handle adding item to cart
   const handleAddToCart = async (product: Product) => {
+    // Check if product is out of stock
+    if (product.inventory_quantity <= 0) {
+      setCartMessage(`${product.name} is currently out of stock.`);
+      setTimeout(() => setCartMessage(null), 3000);
+      return;
+    }
+
     setAddingToCart(product.id);
     setCartMessage(null);
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Check inventory before adding
+      const inventoryResponse = await fetch('/api/inventory/check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity: 1
+        })
+      });
+
+      const inventoryData = await inventoryResponse.json();
+
+      if (!inventoryData.success || !inventoryData.data.available) {
+        setCartMessage(`${product.name} is currently out of stock.`);
+        setTimeout(() => setCartMessage(null), 3000);
+        setAddingToCart(null);
+        return;
+      }
 
       // Add item to cart
       addItem({
@@ -80,7 +105,9 @@ export default function Shop() {
       // Clear message after 3 seconds
       setTimeout(() => setCartMessage(null), 3000);
     } catch (error) {
+      console.error('Error adding to cart:', error);
       setCartMessage('Failed to add item to cart. Please try again.');
+      setTimeout(() => setCartMessage(null), 3000);
     } finally {
       setAddingToCart(null);
     }
@@ -192,13 +219,20 @@ export default function Shop() {
                         </span>
                       </div>
                       <p className="text-coffee mb-4">{product.description}</p>
+                      <div className="mb-2">
+                        {product.inventory_quantity > 0 ? (
+                          <span className="text-sm text-green-600 font-medium">In Stock</span>
+                        ) : (
+                          <span className="text-sm text-red-600 font-medium">Out of Stock</span>
+                        )}
+                      </div>
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-bold text-coffee-dark">${product.price.toFixed(2)}</span>
                         <button 
                           onClick={() => handleAddToCart(product)}
-                          disabled={addingToCart === product.id}
+                          disabled={addingToCart === product.id || product.inventory_quantity === 0}
                           className={`px-4 py-2 rounded-md transition-colors ${
-                            addingToCart === product.id
+                            addingToCart === product.id || product.inventory_quantity === 0
                               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                               : 'bg-coffee hover:bg-coffee-light text-cream-light'
                           }`}
@@ -208,6 +242,8 @@ export default function Shop() {
                               <div className="w-4 h-4 border-2 border-cream-light border-t-transparent rounded-full animate-spin mr-2" />
                               Adding...
                             </div>
+                          ) : product.inventory_quantity === 0 ? (
+                            'Out of Stock'
                           ) : (
                             'Add to Cart'
                           )}

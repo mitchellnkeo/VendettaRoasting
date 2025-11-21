@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { stripe } from '../../../lib/stripe';
 import { query, getClient } from '../../../lib/database';
+import { decreaseInventory } from '../../../lib/inventory';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -106,7 +107,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       orderId = orderResult.rows[0].id;
       const savedOrderNumber = orderResult.rows[0].order_number;
 
-      // Save order items
+      // Save order items and update inventory
       for (const item of items) {
         try {
           await query(
@@ -124,6 +125,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               item.price * item.quantity
             ]
           );
+
+          // Decrease inventory in Sanity if product ID is available
+          if (item.id) {
+            try {
+              await decreaseInventory(item.id, item.quantity);
+            } catch (inventoryError) {
+              console.error('Error updating inventory for product:', item.id, inventoryError);
+              // Don't fail the order if inventory update fails
+              // Log it for manual review
+            }
+          }
         } catch (itemError) {
           console.error('Error saving order item:', itemError);
           // Continue with other items
