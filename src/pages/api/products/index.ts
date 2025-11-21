@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { query } from '../../../lib/database';
-import { ProductFilters } from '../../../types/product';
+import { sanityClient, urlFor } from '../../../lib/sanity';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -20,107 +19,123 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       offset
     } = req.query;
 
-    // Build query
-    let productsQuery = `
-      SELECT 
-        p.*,
-        c.name as category_name,
-        pi.image_url
-      FROM products p
-      LEFT JOIN categories c ON p.category_id = c.id
-      LEFT JOIN LATERAL (
-        SELECT image_url 
-        FROM product_images 
-        WHERE product_id = p.id AND is_primary = true 
-        LIMIT 1
-      ) pi ON true
-      WHERE p.is_active = true
-    `;
-
-    const params: any[] = [];
-    let paramIndex = 1;
-
+    // Build GROQ query with all fields we need
+    let groqQuery = `*[_type == "product" && isActive == true`;
+    
     // Apply filters
     if (category && typeof category === 'string') {
-      productsQuery += ` AND c.slug = $${paramIndex}`;
-      params.push(category);
-      paramIndex++;
+      groqQuery += ` && category->slug.current == "${category}"`;
     }
 
     if (search && typeof search === 'string') {
-      productsQuery += ` AND (p.name ILIKE $${paramIndex} OR p.description ILIKE $${paramIndex})`;
-      params.push(`%${search}%`);
-      paramIndex++;
+      groqQuery += ` && (name match "*${search}*" || description match "*${search}*" || sku match "*${search}*")`;
     }
 
     if (min_price) {
-      productsQuery += ` AND p.price >= $${paramIndex}`;
-      params.push(parseFloat(min_price as string));
-      paramIndex++;
+      groqQuery += ` && price >= ${parseFloat(min_price as string)}`;
     }
 
     if (max_price) {
-      productsQuery += ` AND p.price <= $${paramIndex}`;
-      params.push(parseFloat(max_price as string));
-      paramIndex++;
+      groqQuery += ` && price <= ${parseFloat(max_price as string)}`;
     }
 
     if (is_featured === 'true') {
-      productsQuery += ` AND p.is_featured = true`;
+      groqQuery += ` && isFeatured == true`;
     }
+
+    groqQuery += `] {
+      _id,
+      name,
+      slug,
+      description,
+      shortDescription,
+      price,
+      wholesalePrice,
+      sku,
+      category->{
+        _id,
+        name,
+        slug
+      },
+      weightGrams,
+      origin,
+      roastLevel,
+      flavorNotes,
+      images,
+      isActive,
+      isFeatured,
+      inventoryQuantity,
+      metaTitle,
+      metaDescription,
+      _createdAt,
+      _updatedAt
+    }`;
 
     // Apply sorting
-    const sortBy = (sort_by && typeof sort_by === 'string') ? sort_by : 'created_at';
-    const sortOrderValue = (sort_order && typeof sort_order === 'string') ? sort_order : 'desc';
-    const sortOrder = sortOrderValue.toUpperCase();
-    productsQuery += ` ORDER BY p.${sortBy} ${sortOrder}`;
+    const sortBy = (sort_by && typeof sort_by === 'string') ? sort_by : '_createdAt';
+    const sortOrder = (sort_order && typeof sort_order === 'string') ? sort_order : 'desc';
+    
+    if (sortBy === 'name') {
+      groqQuery += ` | order(name ${sortOrder})`;
+    } else if (sortBy === 'price') {
+      groqQuery += ` | order(price ${sortOrder})`;
+    } else {
+      groqQuery += ` | order(_createdAt ${sortOrder})`;
+    }
 
     // Apply limit and offset
-    if (limit) {
-      productsQuery += ` LIMIT $${paramIndex}`;
-      params.push(parseInt(limit as string));
-      paramIndex++;
-    } else {
-      productsQuery += ` LIMIT 100`; // Default limit
-    }
+    const limitNum = limit ? parseInt(limit as string) : 100;
+    const offsetNum = offset ? parseInt(offset as string) : 0;
+    groqQuery += ` [${offsetNum}...${offsetNum + limitNum}]`;
 
-    if (offset) {
-      productsQuery += ` OFFSET $${paramIndex}`;
-      params.push(parseInt(offset as string));
-    }
+    // Fetch products with category reference resolved
+    const products = await sanityClient.fetch(groqQuery);
 
-    const result = await query(productsQuery, params);
+    // Transform Sanity results to match Product interface
+    const transformedProducts = products.map((product: any) => {
+      // Get primary image or first image
+      const primaryImage = product.images?.find((img: any) => img.isPrimary) || product.images?.[0];
+      const imageUrl = primaryImage 
+        ? urlFor(primaryImage).width(800).height(800).url() 
+        : '/images/placeholder-coffee.jpg';
 
-    // Transform database results to match Product interface
-    const products = (result.rows || []).map((row: any) => ({
-      id: row.id,
-      name: row.name,
-      slug: row.slug,
-      description: row.description || '',
-      short_description: row.short_description || '',
-      price: parseFloat(row.price.toString()),
-      wholesale_price: row.wholesale_price ? parseFloat(row.wholesale_price.toString()) : undefined,
-      sku: row.sku,
-      category_id: row.category_id,
-      category_name: row.category_name || '',
-      weight_grams: row.weight_grams,
-      origin: row.origin,
-      roast_level: row.roast_level,
-      flavor_notes: row.flavor_notes,
-      image_url: row.image_url || '/images/placeholder-coffee.jpg',
-      is_active: row.is_active,
-      is_featured: row.is_featured,
-      inventory_quantity: row.inventory_quantity || 0,
-      meta_title: row.meta_title,
-      meta_description: row.meta_description,
-      created_at: row.created_at,
-      updated_at: row.updated_at
-    }));
+      return {
+        id: product._id,
+        name: product.name,
+        slug: product.slug?.current || '',
+        description: product.description || '',
+        short_description: product.shortDescription || '',
+        price: product.price || 0,
+        wholesale_price: product.wholesalePrice || undefined,
+        sku: product.sku || '',
+        category_id: product.category?._id || '',
+        category_name: product.category?.name || '',
+        weight_grams: product.weightGrams || undefined,
+        origin: product.origin || undefined,
+        roast_level: product.roastLevel || undefined,
+        flavor_notes: product.flavorNotes || undefined,
+        image_url: imageUrl,
+        is_active: product.isActive !== false,
+        is_featured: product.isFeatured || false,
+        inventory_quantity: product.inventoryQuantity || 0,
+        meta_title: product.metaTitle || undefined,
+        meta_description: product.metaDescription || undefined,
+        created_at: product._createdAt,
+        updated_at: product._updatedAt,
+        // Include full image array for product detail pages
+        images: product.images?.map((img: any) => ({
+          id: img._key,
+          image_url: urlFor(img).width(1200).height(1200).url(),
+          alt_text: img.alt || product.name,
+          is_primary: img.isPrimary || false,
+        })) || [],
+      };
+    });
 
     res.status(200).json({
       success: true,
-      data: products,
-      count: products.length
+      data: transformedProducts,
+      count: transformedProducts.length
     });
   } catch (error) {
     console.error('Error fetching products:', error);

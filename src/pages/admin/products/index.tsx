@@ -51,17 +51,28 @@ export default function AdminProducts() {
         params.append('search', searchTerm);
       }
       if (filterActive !== 'all') {
-        params.append('is_active', filterActive === 'active' ? 'true' : 'false');
+        // Note: Sanity uses isActive, but we'll filter client-side for now
+        // since the API filters by isActive=true by default
       }
       if (filterFeatured !== null) {
         params.append('is_featured', filterFeatured ? 'true' : 'false');
       }
 
-      const response = await fetch(`/api/admin/products?${params.toString()}`);
+      // Fetch from public products API (which now uses Sanity)
+      const response = await fetch(`/api/products?${params.toString()}`);
       const data = await response.json();
 
       if (data.success) {
-        setProducts(data.data || []);
+        let filteredProducts = data.data || [];
+        
+        // Client-side filter for active/inactive since Sanity API only returns active by default
+        if (filterActive !== 'all') {
+          filteredProducts = filteredProducts.filter((p: Product) => 
+            filterActive === 'active' ? p.is_active : !p.is_active
+          );
+        }
+        
+        setProducts(filteredProducts);
       } else {
         console.error('Failed to fetch products:', data.message);
         setProducts([]);
@@ -79,45 +90,8 @@ export default function AdminProducts() {
     fetchProducts();
   };
 
-  const handleToggleActive = async (productId: string, currentStatus: boolean) => {
-    try {
-      const response = await fetch(`/api/admin/products/${productId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_active: !currentStatus }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        fetchProducts(); // Refresh list
-      } else {
-        alert(`Failed to update product: ${data.message}`);
-      }
-    } catch (error) {
-      console.error('Error updating product:', error);
-      alert('An error occurred while updating the product.');
-    }
-  };
-
-  const handleToggleFeatured = async (productId: string, currentStatus: boolean) => {
-    try {
-      const response = await fetch(`/api/admin/products/${productId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_featured: !currentStatus }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        fetchProducts(); // Refresh list
-      } else {
-        alert(`Failed to update product: ${data.message}`);
-      }
-    } catch (error) {
-      console.error('Error updating product:', error);
-      alert('An error occurred while updating the product.');
-    }
-  };
+  // Products are managed in Sanity Studio, so we just link to it
+  const sanityStudioUrl = process.env.NEXT_PUBLIC_SANITY_STUDIO_URL || 'https://vendetta-roasting.sanity.studio';
 
   if (isLoading) {
     return (
@@ -143,12 +117,40 @@ export default function AdminProducts() {
           <div>
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl font-semibold text-coffee-dark">Product Management</h1>
-              <Link
-                href="/admin/products/new"
-                className="px-4 py-2 bg-coffee text-cream-light rounded-md hover:bg-coffee-light transition-colors"
-              >
-                + Add New Product
-              </Link>
+              <div className="flex gap-3">
+                <a
+                  href={process.env.NEXT_PUBLIC_SANITY_STUDIO_URL || 'https://vendetta-roasting.sanity.studio'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 bg-coffee text-cream-light rounded-md hover:bg-coffee-light transition-colors"
+                >
+                  ✏️ Edit in Sanity Studio
+                </a>
+              </div>
+            </div>
+
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-blue-800">
+                    Products are managed in Sanity Studio
+                  </h3>
+                  <div className="mt-2 text-sm text-blue-700">
+                    <p>
+                      To create or edit products, use the Sanity Studio link above. 
+                      Products are stored in Sanity CMS for easy content management.
+                    </p>
+                    <p className="mt-1">
+                      This page shows a read-only view of products for quick reference.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Filters and Search */}
@@ -287,36 +289,14 @@ export default function AdminProducts() {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end space-x-2">
-                            <button
-                              onClick={() => handleToggleActive(product.id, product.is_active)}
-                              className={`text-xs px-2 py-1 rounded ${
-                                product.is_active
-                                  ? 'bg-red-100 text-red-800 hover:bg-red-200'
-                                  : 'bg-green-100 text-green-800 hover:bg-green-200'
-                              }`}
-                              title={product.is_active ? 'Deactivate' : 'Activate'}
-                            >
-                              {product.is_active ? 'Deactivate' : 'Activate'}
-                            </button>
-                            <button
-                              onClick={() => handleToggleFeatured(product.id, product.is_featured)}
-                              className={`text-xs px-2 py-1 rounded ${
-                                product.is_featured
-                                  ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
-                                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                              }`}
-                              title={product.is_featured ? 'Unfeature' : 'Feature'}
-                            >
-                              {product.is_featured ? '★' : '☆'}
-                            </button>
-                            <Link
-                              href={`/admin/products/${product.id}`}
-                              className="text-coffee hover:text-coffee-light"
-                            >
-                              Edit →
-                            </Link>
-                          </div>
+                          <a
+                            href={`${sanityStudioUrl}/desk/product;${product.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-coffee hover:text-coffee-light"
+                          >
+                            Edit in Studio →
+                          </a>
                         </td>
                       </tr>
                     ))
