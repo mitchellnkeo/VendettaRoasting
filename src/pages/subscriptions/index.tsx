@@ -1,6 +1,7 @@
 import Head from 'next/head'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { SUBSCRIPTION_PLANS } from '../../lib/subscription'
 
 // Frequency options
@@ -10,11 +11,47 @@ const FREQUENCY_OPTIONS = [
   { value: 'monthly', label: 'Monthly' }
 ];
 
+interface SubscriptionsPageContent {
+  heroTitle: string;
+  heroSubtitle: string;
+  howItWorksTitle: string;
+  steps: Array<{
+    stepNumber: number;
+    title: string;
+    description: string;
+  }>;
+  additionalContent: Array<{
+    title: string;
+    content: Array<{ paragraph: string }>;
+    image: string | null;
+  }>;
+}
+
 export default function Subscriptions() {
+  const [content, setContent] = useState<SubscriptionsPageContent | null>(null);
+  const [contentLoading, setContentLoading] = useState(true);
   const [plans, setPlans] = useState(SUBSCRIPTION_PLANS)
   const [selectedPlan, setSelectedPlan] = useState('premium');
   const [frequency, setFrequency] = useState('biweekly');
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const response = await fetch('/api/content/subscriptionsPage');
+        const data = await response.json();
+        if (data.success && data.data) {
+          setContent(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching subscriptions page content:', error);
+      } finally {
+        setContentLoading(false);
+      }
+    };
+
+    fetchContent();
+  }, []);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -37,6 +74,14 @@ export default function Subscriptions() {
     fetchPlans()
   }, [])
 
+  if (contentLoading || !content) {
+    return (
+      <div className="bg-cream-light min-h-screen flex items-center justify-center">
+        <div className="text-coffee">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Head>
@@ -49,11 +94,10 @@ export default function Subscriptions() {
         <div className="absolute inset-0 bg-black opacity-50 z-10"></div>
         <div className="container mx-auto px-4 z-20 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-cream-light mb-6">
-            Coffee Subscription Service
+            {content.heroTitle}
           </h1>
           <p className="text-xl text-cream mb-8 max-w-2xl mx-auto">
-            Never run out of freshly roasted coffee. Get your favorite beans delivered 
-            right to your door on your schedule.
+            {content.heroSubtitle}
           </p>
         </div>
       </section>
@@ -61,33 +105,38 @@ export default function Subscriptions() {
       {/* How It Works */}
       <section className="py-16 bg-cream-light">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-coffee-dark text-center mb-12">How It Works</h2>
+          <h2 className="text-3xl font-bold text-coffee-dark text-center mb-12">{content.howItWorksTitle}</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="bg-coffee text-cream-light w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">1</div>
-              <h3 className="text-xl font-semibold text-coffee-dark mb-3">Choose Your Plan</h3>
-              <p className="text-coffee">
-                Select from our subscription options based on your coffee consumption and preferences.
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="bg-coffee text-cream-light w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">2</div>
-              <h3 className="text-xl font-semibold text-coffee-dark mb-3">Customize Your Coffee</h3>
-              <p className="text-coffee">
-                Pick your favorite beans, roast level, and grind type. Change your selections anytime.
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="bg-coffee text-cream-light w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">3</div>
-              <h3 className="text-xl font-semibold text-coffee-dark mb-3">Enjoy Fresh Coffee</h3>
-              <p className="text-coffee">
-                Receive freshly roasted coffee on your schedule. Skip, pause, or cancel anytime.
-              </p>
-            </div>
+            {content.steps.map((step) => (
+              <div key={step.stepNumber} className="text-center">
+                <div className="bg-coffee text-cream-light w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
+                  {step.stepNumber}
+                </div>
+                <h3 className="text-xl font-semibold text-coffee-dark mb-3">{step.title}</h3>
+                <p className="text-coffee">{step.description}</p>
+              </div>
+            ))}
           </div>
+
+          {/* Additional Content Sections */}
+          {content.additionalContent && content.additionalContent.length > 0 && (
+            <div className="mt-16 space-y-12">
+              {content.additionalContent.map((section, index) => (
+                <div key={index} className="max-w-4xl mx-auto">
+                  {section.image && (
+                    <div className="relative h-64 w-full rounded-lg overflow-hidden mb-6">
+                      <Image src={section.image} alt={section.title} fill className="object-cover" />
+                    </div>
+                  )}
+                  <h3 className="text-2xl font-bold text-coffee-dark mb-4 text-center">{section.title}</h3>
+                  {section.content && section.content.map((item, i) => (
+                    <p key={i} className="text-coffee mb-4 text-center">{item.paragraph}</p>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

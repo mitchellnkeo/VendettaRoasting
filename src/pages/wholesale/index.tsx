@@ -1,8 +1,63 @@
 import Head from 'next/head'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import Image from 'next/image'
+
+interface WholesalePageContent {
+  heroTitle: string;
+  heroSubtitle: string;
+  whyPartnerTitle: string;
+  benefits: Array<{
+    title: string;
+    description: string;
+    icon: string | null;
+  }>;
+  additionalContent: Array<{
+    title: string;
+    content: Array<{ paragraph: string }>;
+    image: string | null;
+  }>;
+}
+
+// Helper function to render icon SVG
+const renderIcon = (iconName: string | null | undefined) => {
+  if (!iconName) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+      </svg>
+    );
+  }
+
+  const iconMap: Record<string, JSX.Element> = {
+    checkmark: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+      </svg>
+    ),
+    clock: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    users: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    ),
+    cart: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    ),
+  };
+
+  return iconMap[iconName] || iconMap.checkmark;
+};
 
 export default function Wholesale() {
+  const [content, setContent] = useState<WholesalePageContent | null>(null);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     businessName: '',
     contactName: '',
@@ -12,6 +67,24 @@ export default function Wholesale() {
     businessType: '',
     message: ''
   });
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const response = await fetch('/api/content/wholesalePage');
+        const data = await response.json();
+        if (data.success && data.data) {
+          setContent(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching wholesale page content:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContent();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -28,6 +101,14 @@ export default function Wholesale() {
     alert('Thank you for your interest in our wholesale program! We will review your application and get back to you soon.');
   };
 
+  if (loading || !content) {
+    return (
+      <div className="bg-cream-light min-h-screen flex items-center justify-center">
+        <div className="text-coffee">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Head>
@@ -41,11 +122,10 @@ export default function Wholesale() {
         <div className="container mx-auto px-4 z-20">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl font-bold text-cream-light mb-6">
-              Wholesale Coffee Solutions
+              {content.heroTitle}
             </h1>
             <p className="text-xl text-cream mb-8">
-              Partner with Vendetta Roasting to bring exceptional coffee to your business.
-              We offer competitive pricing, reliable delivery, and dedicated support.
+              {content.heroSubtitle}
             </p>
           </div>
         </div>
@@ -57,68 +137,40 @@ export default function Wholesale() {
           <div className="flex flex-col lg:flex-row gap-12">
             {/* Information Column */}
             <div className="lg:w-1/2">
-              <h2 className="text-3xl font-bold text-coffee-dark mb-6">Why Partner With Us?</h2>
+              <h2 className="text-3xl font-bold text-coffee-dark mb-6">{content.whyPartnerTitle}</h2>
               
               <div className="space-y-8">
-                <div className="flex items-start">
-                  <div className="bg-coffee text-cream-light p-3 rounded-full mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
+                {content.benefits.map((benefit, index) => (
+                  <div key={index} className="flex items-start">
+                    <div className="bg-coffee text-cream-light p-3 rounded-full mr-4 flex-shrink-0">
+                      {renderIcon(benefit.icon)}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-coffee-dark mb-2">{benefit.title}</h3>
+                      <p className="text-coffee">{benefit.description}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-coffee-dark mb-2">Quality & Consistency</h3>
-                    <p className="text-coffee">
-                      Our rigorous quality control ensures that every batch of coffee meets our high standards.
-                      Your customers will enjoy the same exceptional experience with every cup.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start">
-                  <div className="bg-coffee text-cream-light p-3 rounded-full mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-coffee-dark mb-2">Freshly Roasted</h3>
-                    <p className="text-coffee">
-                      Coffee is roasted to order and delivered within days of roasting, ensuring maximum freshness and flavor.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start">
-                  <div className="bg-coffee text-cream-light p-3 rounded-full mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-coffee-dark mb-2">Dedicated Support</h3>
-                    <p className="text-coffee">
-                      Our wholesale team is here to help you select the right coffees, troubleshoot equipment issues, 
-                      and provide barista training to ensure your success.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start">
-                  <div className="bg-coffee text-cream-light p-3 rounded-full mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-coffee-dark mb-2">Seattle Area Delivery</h3>
-                    <p className="text-coffee">
-                      We offer pickup options and delivery within the Seattle area to ensure your business 
-                      never runs out of great coffee.
-                    </p>
-                  </div>
-                </div>
+                ))}
               </div>
+
+              {/* Additional Content Sections */}
+              {content.additionalContent && content.additionalContent.length > 0 && (
+                <div className="mt-12 space-y-8">
+                  {content.additionalContent.map((section, index) => (
+                    <div key={index}>
+                      {section.image && (
+                        <div className="relative h-64 w-full rounded-lg overflow-hidden mb-4">
+                          <Image src={section.image} alt={section.title} fill className="object-cover" />
+                        </div>
+                      )}
+                      <h3 className="text-2xl font-bold text-coffee-dark mb-4">{section.title}</h3>
+                      {section.content && section.content.map((item, i) => (
+                        <p key={i} className="text-coffee mb-4">{item.paragraph}</p>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div className="mt-12 p-6 bg-coffee text-cream-light rounded-lg">
                 <h3 className="text-xl font-semibold mb-4">Already a wholesale partner?</h3>

@@ -1,7 +1,26 @@
 import Head from 'next/head';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+
+interface ContactPageContent {
+  heroTitle: string;
+  heroSubtitle: string;
+  getInTouchTitle: string;
+  locationTitle: string;
+  locationAddress: string;
+  hoursTitle: string;
+  hours: string;
+  contactTitle: string;
+  contactInfo: string;
+  mapImage: string | null;
+  mapEmbedUrl: string | null;
+  formTitle: string;
+  formSuccessMessage: string;
+}
 
 export default function Contact() {
+  const [content, setContent] = useState<ContactPageContent | null>(null);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -9,6 +28,24 @@ export default function Contact() {
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const response = await fetch('/api/content/contactPage');
+        const data = await response.json();
+        if (data.success && data.data) {
+          setContent(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching contact page content:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContent();
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +65,14 @@ export default function Contact() {
     });
   };
 
+  if (loading || !content) {
+    return (
+      <div className="bg-cream-light min-h-screen flex items-center justify-center">
+        <div className="text-coffee">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Head>
@@ -40,56 +85,109 @@ export default function Contact() {
           <div className="max-w-4xl mx-auto">
             {/* Header */}
             <div className="text-center mb-12">
-              <h1 className="text-4xl font-bold text-coffee-dark mb-4">Contact Us</h1>
+              <h1 className="text-4xl font-bold text-coffee-dark mb-4">{content.heroTitle}</h1>
               <p className="text-lg text-coffee max-w-2xl mx-auto">
-                Have a question? Want to learn more about our coffee? We'd love to hear from you!
+                {content.heroSubtitle}
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Contact Information */}
               <div className="bg-white p-8 rounded-lg shadow-md">
-                <h2 className="text-2xl font-bold text-coffee-dark mb-6">Get in Touch</h2>
+                <h2 className="text-2xl font-bold text-coffee-dark mb-6">{content.getInTouchTitle}</h2>
                 
                 <div className="space-y-6 mb-8">
-                  <div>
-                    <h3 className="text-lg font-semibold text-coffee-dark mb-2">Location</h3>
-                    <p className="text-coffee">
-                      123 Coffee Street<br />
-                      Seattle, WA 98101
-                    </p>
-                  </div>
+                  {content.locationAddress && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-coffee-dark mb-2">{content.locationTitle}</h3>
+                      <p className="text-coffee whitespace-pre-line">
+                        {content.locationAddress}
+                      </p>
+                    </div>
+                  )}
                   
-                  <div>
-                    <h3 className="text-lg font-semibold text-coffee-dark mb-2">Hours</h3>
-                    <p className="text-coffee">
-                      Monday - Friday: 7:00 AM - 6:00 PM<br />
-                      Saturday - Sunday: 8:00 AM - 5:00 PM
-                    </p>
-                  </div>
+                  {content.hours && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-coffee-dark mb-2">{content.hoursTitle}</h3>
+                      <p className="text-coffee whitespace-pre-line">
+                        {content.hours}
+                      </p>
+                    </div>
+                  )}
                   
-                  <div>
-                    <h3 className="text-lg font-semibold text-coffee-dark mb-2">Contact</h3>
-                    <p className="text-coffee">
-                      Email: <a href="mailto:info@vendettaroasting.com" className="text-coffee hover:text-coffee-light underline">info@vendettaroasting.com</a><br />
-                      Phone: <a href="tel:+12065551234" className="text-coffee hover:text-coffee-light underline">(206) 555-1234</a>
-                    </p>
-                  </div>
+                  {content.contactInfo && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-coffee-dark mb-2">{content.contactTitle}</h3>
+                      <p className="text-coffee whitespace-pre-line">
+                        {content.contactInfo.split('\n').map((line, i) => {
+                          // Extract email and phone links
+                          const emailMatch = line.match(/Email:\s*(.+)/);
+                          const phoneMatch = line.match(/Phone:\s*(.+)/);
+                          if (emailMatch) {
+                            return (
+                              <span key={i}>
+                                Email:{' '}
+                                <a href={`mailto:${emailMatch[1]}`} className="text-coffee hover:text-coffee-light underline">
+                                  {emailMatch[1]}
+                                </a>
+                                {i < content.contactInfo.split('\n').length - 1 && <br />}
+                              </span>
+                            );
+                          }
+                          if (phoneMatch) {
+                            return (
+                              <span key={i}>
+                                Phone:{' '}
+                                <a href={`tel:${phoneMatch[1].replace(/\D/g, '')}`} className="text-coffee hover:text-coffee-light underline">
+                                  {phoneMatch[1]}
+                                </a>
+                                {i < content.contactInfo.split('\n').length - 1 && <br />}
+                              </span>
+                            );
+                          }
+                          return (
+                            <span key={i}>
+                              {line}
+                              {i < content.contactInfo.split('\n').length - 1 && <br />}
+                            </span>
+                          );
+                        })}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
-                {/* Map Placeholder */}
-                <div className="bg-gray-300 h-64 w-full rounded-lg flex items-center justify-center">
-                  <span className="text-gray-500">Map Placeholder</span>
-                </div>
+                {/* Map */}
+                {content.mapEmbedUrl ? (
+                  <div className="h-64 w-full rounded-lg overflow-hidden">
+                    <iframe
+                      src={content.mapEmbedUrl}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  </div>
+                ) : content.mapImage ? (
+                  <div className="relative h-64 w-full rounded-lg overflow-hidden">
+                    <Image src={content.mapImage} alt="Map" fill className="object-cover" />
+                  </div>
+                ) : (
+                  <div className="bg-gray-300 h-64 w-full rounded-lg flex items-center justify-center">
+                    <span className="text-gray-500">Map Placeholder</span>
+                  </div>
+                )}
               </div>
 
               {/* Contact Form */}
               <div className="bg-white p-8 rounded-lg shadow-md">
-                <h2 className="text-2xl font-bold text-coffee-dark mb-6">Send us a Message</h2>
+                <h2 className="text-2xl font-bold text-coffee-dark mb-6">{content.formTitle}</h2>
                 
                 {submitted ? (
                   <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                    Thank you for your message! We'll get back to you soon.
+                    {content.formSuccessMessage}
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-4">
