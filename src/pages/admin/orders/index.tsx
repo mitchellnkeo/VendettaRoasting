@@ -21,8 +21,11 @@ export default function AdminOrders() {
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !isAdmin)) {
@@ -87,6 +90,64 @@ export default function AdminOrders() {
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (selectedStatus !== 'all') {
+        params.append('status', selectedStatus);
+      }
+      if (startDate) {
+        params.append('startDate', startDate);
+      }
+      if (endDate) {
+        params.append('endDate', endDate);
+      }
+
+      // Fetch CSV data
+      const response = await fetch(`/api/admin/orders/export?${params.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error('Export failed');
+      }
+
+      // Get CSV content
+      const csvContent = await response.text();
+      
+      // Create blob and download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      // Get filename from Content-Disposition header or use default
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = 'orders-export.csv';
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting orders:', error);
+      alert('Failed to export orders. Please try again.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const filteredOrders = orders.filter((order) => {
     if (!searchTerm) return true;
     const search = searchTerm.toLowerCase();
@@ -112,6 +173,28 @@ export default function AdminOrders() {
         <div>
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-semibold text-coffee-dark">Order Management</h1>
+            <button
+              onClick={handleExport}
+              disabled={exporting || orders.length === 0}
+              className="bg-coffee hover:bg-coffee-light text-cream-light px-4 py-2 rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {exporting ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Export to CSV
+                </>
+              )}
+            </button>
           </div>
 
           {/* Database Connection Warning - Only show if there's a message from API */}
@@ -142,7 +225,7 @@ export default function AdminOrders() {
 
           {/* Filters */}
           <div className="bg-white shadow rounded-lg p-4 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Filter by Status
@@ -163,6 +246,28 @@ export default function AdminOrders() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-coffee focus:ring-coffee"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-coffee focus:ring-coffee"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Search Orders
                 </label>
                 <input
@@ -173,6 +278,9 @@ export default function AdminOrders() {
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-coffee focus:ring-coffee"
                 />
               </div>
+            </div>
+            <div className="mt-4 text-sm text-gray-500">
+              <p>💡 <strong>Export Tip:</strong> Use date filters to export specific date ranges. The export includes all order details and items.</p>
             </div>
           </div>
 
