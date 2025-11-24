@@ -46,6 +46,8 @@ export default function AdminOrderDetail() {
     status: '',
     payment_status: '',
     notes: '',
+    tracking_number: '',
+    tracking_url: '',
   });
 
   useEffect(() => {
@@ -66,10 +68,27 @@ export default function AdminOrderDetail() {
       
       if (data.success) {
         setOrder(data.data);
+        // Extract tracking info from notes if present
+        const notes = data.data.notes || '';
+        const trackingMatch = notes.match(/Tracking Number:\s*([^\n]+)/);
+        const trackingUrlMatch = notes.match(/Tracking URL:\s*([^\n]+)/);
+        
+        // Remove tracking info from notes display (works without 's' flag)
+        let cleanNotes = notes;
+        if (trackingMatch) {
+          // Remove from the tracking number onwards
+          const trackingIndex = notes.indexOf('Tracking Number:');
+          if (trackingIndex !== -1) {
+            cleanNotes = notes.substring(0, trackingIndex).trim();
+          }
+        }
+        
         setStatusUpdate({
           status: data.data.status,
           payment_status: data.data.payment_status,
-          notes: data.data.notes || '',
+          notes: cleanNotes,
+          tracking_number: trackingMatch ? trackingMatch[1].trim() : '',
+          tracking_url: trackingUrlMatch ? trackingUrlMatch[1].trim() : '',
         });
       } else {
         console.error('Failed to fetch order:', data.message);
@@ -97,16 +116,35 @@ export default function AdminOrderDetail() {
 
     try {
       const decodedId = decodeURIComponent(orderId as string);
+      
+      // Prepare update payload
+      const updatePayload: any = {
+        ...statusUpdate,
+      };
+
+      // Set shipped_at timestamp when status changes to "shipped"
+      if (statusUpdate.status === 'shipped' && order?.status !== 'shipped') {
+        updatePayload.shipped_at = new Date().toISOString();
+      }
+
+      // Set delivered_at timestamp when status changes to "delivered"
+      if (statusUpdate.status === 'delivered' && order?.status !== 'delivered') {
+        updatePayload.delivered_at = new Date().toISOString();
+      }
+
       const response = await fetch(`/api/admin/orders/${encodeURIComponent(decodedId)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(statusUpdate),
+        body: JSON.stringify(updatePayload),
       });
 
       const data = await response.json();
       if (data.success) {
         await fetchOrder();
-        alert('Order updated successfully');
+        const message = data.emailSent 
+          ? 'Order updated successfully! Customer notification email has been sent.'
+          : 'Order updated successfully!';
+        alert(message);
       } else {
         alert(data.message || 'Error updating order');
       }
@@ -268,6 +306,42 @@ export default function AdminOrderDetail() {
                       <option value="refunded">Refunded</option>
                     </select>
                   </div>
+
+                  {(statusUpdate.status === 'shipped' || statusUpdate.status === 'delivered') && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Tracking Number (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={statusUpdate.tracking_number}
+                          onChange={(e) => setStatusUpdate({ ...statusUpdate, tracking_number: e.target.value })}
+                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-coffee focus:ring-coffee"
+                          placeholder="e.g., 1Z999AA10123456784"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">
+                          This will be included in the shipping notification email to the customer.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Tracking URL (Optional)
+                        </label>
+                        <input
+                          type="url"
+                          value={statusUpdate.tracking_url}
+                          onChange={(e) => setStatusUpdate({ ...statusUpdate, tracking_url: e.target.value })}
+                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-coffee focus:ring-coffee"
+                          placeholder="https://tracking.carrier.com/..."
+                        />
+                        <p className="mt-1 text-xs text-gray-500">
+                          Link to track the package (e.g., USPS, UPS, FedEx tracking page).
+                        </p>
+                      </div>
+                    </>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">

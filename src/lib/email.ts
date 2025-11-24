@@ -621,3 +621,245 @@ export const createLowStockAlertEmail = (data: LowStockAlertData): EmailData => 
     text
   }
 }
+
+// Email template for order shipped notification
+export interface OrderShippedData {
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  items: Array<{
+    name: string;
+    quantity: number;
+  }>;
+  shippingAddress: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  trackingNumber?: string;
+  trackingUrl?: string;
+  estimatedDelivery: string;
+}
+
+export const createOrderShippedEmail = (data: OrderShippedData): EmailData => {
+  const { orderNumber, customerName, customerEmail, items, shippingAddress, trackingNumber, trackingUrl, estimatedDelivery } = data;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Your Order Has Shipped - Vendetta Roasting</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #8B4513; color: white; padding: 20px; text-align: center; }
+        .content { background-color: #f9f9f9; padding: 30px; }
+        .order-details { background-color: white; padding: 20px; margin: 20px 0; border-radius: 5px; }
+        .tracking-box { background-color: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin: 20px 0; border-radius: 5px; }
+        .tracking-number { font-size: 18px; font-weight: bold; color: #2e7d32; margin: 10px 0; }
+        .item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+        .button { display: inline-block; background-color: #8B4513; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🚚 Vendetta Roasting</h1>
+          <h2>Your Order Has Shipped!</h2>
+        </div>
+        
+        <div class="content">
+          <h3>Great news, ${customerName}!</h3>
+          <p>Your order <strong>#${orderNumber}</strong> has been shipped and is on its way to you.</p>
+          
+          ${trackingNumber ? `
+            <div class="tracking-box">
+              <h4 style="margin-top: 0; color: #2e7d32;">📦 Tracking Information</h4>
+              <div class="tracking-number">${trackingNumber}</div>
+              ${trackingUrl ? `<p><a href="${trackingUrl}" style="color: #8B4513; text-decoration: none;">Track Your Package →</a></p>` : ''}
+              <p style="margin-bottom: 0;"><strong>Estimated Delivery:</strong> ${estimatedDelivery}</p>
+            </div>
+          ` : `
+            <div class="tracking-box">
+              <p><strong>Estimated Delivery:</strong> ${estimatedDelivery}</p>
+            </div>
+          `}
+          
+          <div class="order-details">
+            <h4>Items Shipped</h4>
+            ${items.map(item => `
+              <div class="item">
+                <span>${item.name} × ${item.quantity}</span>
+              </div>
+            `).join('')}
+            
+            <h4 style="margin-top: 20px;">Shipping Address</h4>
+            <p>
+              ${shippingAddress.street}<br>
+              ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.zipCode}<br>
+              ${shippingAddress.country}
+            </p>
+          </div>
+          
+          <p>You'll receive another email when your order is delivered. If you have any questions, please don't hesitate to contact us.</p>
+          
+          <div style="text-align: center;">
+            <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/orders/${orderNumber}" class="button">View Order Details</a>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p>Vendetta Roasting - Premium Coffee Roasters</p>
+          <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const text = `
+    Your Order Has Shipped - Vendetta Roasting
+    
+    Great news, ${customerName}!
+    
+    Your order #${orderNumber} has been shipped and is on its way to you.
+    
+    ${trackingNumber ? `Tracking Number: ${trackingNumber}\n${trackingUrl ? `Track Your Package: ${trackingUrl}\n` : ''}` : ''}
+    Estimated Delivery: ${estimatedDelivery}
+    
+    Items Shipped:
+    ${items.map(item => `- ${item.name} × ${item.quantity}`).join('\n')}
+    
+    Shipping Address:
+    ${shippingAddress.street}
+    ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.zipCode}
+    ${shippingAddress.country}
+    
+    View order details: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/orders/${orderNumber}
+    
+    Thank you for choosing Vendetta Roasting!
+  `;
+
+  return {
+    to: customerEmail,
+    from: fromEmail,
+    subject: `Your Order #${orderNumber} Has Shipped! 🚚`,
+    html,
+    text
+  };
+};
+
+// Email template for order delivered notification
+export interface OrderDeliveredData {
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  items: Array<{
+    name: string;
+    quantity: number;
+  }>;
+  deliveredDate: string;
+}
+
+export const createOrderDeliveredEmail = (data: OrderDeliveredData): EmailData => {
+  const { orderNumber, customerName, customerEmail, items, deliveredDate } = data;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Your Order Has Been Delivered - Vendetta Roasting</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #4caf50; color: white; padding: 20px; text-align: center; }
+        .content { background-color: #f9f9f9; padding: 30px; }
+        .order-details { background-color: white; padding: 20px; margin: 20px 0; border-radius: 5px; }
+        .delivery-box { background-color: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin: 20px 0; border-radius: 5px; }
+        .item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+        .button { display: inline-block; background-color: #8B4513; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>✅ Vendetta Roasting</h1>
+          <h2>Your Order Has Been Delivered!</h2>
+        </div>
+        
+        <div class="content">
+          <h3>Hello ${customerName}!</h3>
+          <p>We're excited to let you know that your order <strong>#${orderNumber}</strong> has been delivered.</p>
+          
+          <div class="delivery-box">
+            <p style="margin: 0;"><strong>Delivered on:</strong> ${deliveredDate}</p>
+          </div>
+          
+          <div class="order-details">
+            <h4>Items Delivered</h4>
+            ${items.map(item => `
+              <div class="item">
+                <span>${item.name} × ${item.quantity}</span>
+              </div>
+            `).join('')}
+          </div>
+          
+          <p>We hope you enjoy your coffee! If you have any questions or concerns about your order, please don't hesitate to reach out.</p>
+          
+          <p style="margin-top: 30px;">We'd love to hear about your experience. Consider leaving a review to help other coffee lovers discover great products!</p>
+          
+          <div style="text-align: center;">
+            <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/orders/${orderNumber}" class="button">View Order Details</a>
+            <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/shop" class="button" style="background-color: #4caf50;">Shop Again</a>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p>Vendetta Roasting - Premium Coffee Roasters</p>
+          <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const text = `
+    Your Order Has Been Delivered - Vendetta Roasting
+    
+    Hello ${customerName}!
+    
+    We're excited to let you know that your order #${orderNumber} has been delivered.
+    
+    Delivered on: ${deliveredDate}
+    
+    Items Delivered:
+    ${items.map(item => `- ${item.name} × ${item.quantity}`).join('\n')}
+    
+    We hope you enjoy your coffee! If you have any questions or concerns about your order, please don't hesitate to reach out.
+    
+    We'd love to hear about your experience. Consider leaving a review to help other coffee lovers discover great products!
+    
+    View order details: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/orders/${orderNumber}
+    Shop again: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/shop
+    
+    Thank you for choosing Vendetta Roasting!
+  `;
+
+  return {
+    to: customerEmail,
+    from: fromEmail,
+    subject: `Your Order #${orderNumber} Has Been Delivered! ✅`,
+    html,
+    text
+  };
+};
