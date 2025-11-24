@@ -1,9 +1,10 @@
-import Head from 'next/head'
 import { Inter } from 'next/font/google'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import Announcements from '../components/Announcements'
+import SEO from '../components/SEO'
+import { generateOrganizationSchema, generateWebsiteSchema } from '../lib/structuredData'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -24,10 +25,24 @@ interface HomepageContent {
 export default function Home() {
   const [content, setContent] = useState<HomepageContent | null>(null)
   const [loading, setLoading] = useState(true)
+  const [siteSettings, setSiteSettings] = useState<any>(null)
 
   useEffect(() => {
     fetchHomepageContent()
+    fetchSiteSettings()
   }, [])
+
+  const fetchSiteSettings = async () => {
+    try {
+      const response = await fetch('/api/content/siteSettings')
+      const data = await response.json()
+      if (data.success) {
+        setSiteSettings(data.data)
+      }
+    } catch (error) {
+      console.error('Error fetching site settings:', error)
+    }
+  }
 
   const fetchHomepageContent = async () => {
     try {
@@ -71,14 +86,50 @@ export default function Home() {
 
   const displayContent = content || defaultContent
 
+  // Generate structured data
+  const structuredData = [];
+  
+  // Website schema
+  structuredData.push(generateWebsiteSchema());
+  
+  // Organization schema
+  if (siteSettings) {
+    structuredData.push(generateOrganizationSchema({
+      name: siteSettings.companyName || 'Vendetta Roasting',
+      url: process.env.NEXT_PUBLIC_SITE_URL || 'https://vendettaroasting.com',
+      description: siteSettings.tagline || 'Premium coffee roasting company',
+      address: siteSettings.footerAddress ? {
+        street: siteSettings.footerAddress.street,
+        city: siteSettings.footerAddress.city,
+        state: siteSettings.footerAddress.state,
+        zipCode: siteSettings.footerAddress.zipCode,
+        country: 'USA',
+      } : undefined,
+      contactPoint: siteSettings.footerAddress ? {
+        email: siteSettings.footerAddress.email,
+        telephone: siteSettings.footerAddress.phone,
+        contactType: 'Customer Service',
+      } : undefined,
+      sameAs: siteSettings.socialMedia ? [
+        siteSettings.socialMedia.instagram,
+        siteSettings.socialMedia.facebook,
+        siteSettings.socialMedia.twitter,
+        siteSettings.socialMedia.youtube,
+        siteSettings.socialMedia.tiktok,
+      ].filter(Boolean) : undefined,
+    }));
+  }
+
   return (
     <>
-      <Head>
-        <title>{displayContent.title}</title>
-        <meta name="description" content="Premium coffee roasting company" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+      <SEO
+        title={displayContent.title}
+        description={displayContent.heroSubtitle || 'Premium coffee roasting company offering exceptional coffee beans, subscriptions, and wholesale solutions.'}
+        image={displayContent.heroImage || undefined}
+        url="/"
+        type="website"
+        structuredData={structuredData}
+      />
       
       {/* Announcements Banner */}
       <Announcements />

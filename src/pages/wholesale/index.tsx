@@ -1,7 +1,7 @@
-import Head from 'next/head'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import SEO from '../../components/SEO'
 
 interface WholesalePageContent {
   heroTitle: string;
@@ -150,10 +150,11 @@ export default function Wholesale() {
 
   return (
     <>
-      <Head>
-        <title>Wholesale | Vendetta Roasting</title>
-        <meta name="description" content="Wholesale coffee solutions for your business" />
-      </Head>
+      <SEO
+        title="Wholesale"
+        description="Wholesale coffee solutions for your business. Partner with Vendetta Roasting for premium coffee beans, competitive pricing, and reliable service."
+        url="/wholesale"
+      />
 
       {/* Hero Section */}
       <section className="relative h-[50vh] bg-coffee-dark flex items-center">

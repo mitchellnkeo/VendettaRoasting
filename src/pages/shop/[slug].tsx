@@ -1,10 +1,12 @@
-import Head from 'next/head'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { Product } from '../../types/product'
 import ProductImage from '../../components/ProductImage'
 import { useCart } from '../../lib/cart/CartContext'
+import SEO from '../../components/SEO'
+import { generateProductSchema, generateBreadcrumbSchema } from '../../lib/structuredData'
+import { urlFor } from '../../lib/sanity'
 
 export default function ProductDetail() {
   const router = useRouter()
@@ -116,9 +118,7 @@ export default function ProductDetail() {
   if (loading) {
     return (
       <>
-        <Head>
-          <title>Loading... | Vendetta Roasting</title>
-        </Head>
+        <SEO title="Loading..." />
         <div className="bg-cream-light py-12">
           <div className="container mx-auto px-4">
             <div className="text-center py-12">
@@ -134,9 +134,7 @@ export default function ProductDetail() {
   if (error || !product) {
     return (
       <>
-        <Head>
-          <title>Product Not Found | Vendetta Roasting</title>
-        </Head>
+        <SEO title="Product Not Found" />
         <div className="bg-cream-light py-12">
           <div className="container mx-auto px-4">
             <div className="text-center py-12">
@@ -157,17 +155,54 @@ export default function ProductDetail() {
     )
   }
 
+  // Generate structured data
+  const structuredData = [];
+  
+  // Product schema
+  // Check if product has images array (from API response)
+  const productWithImages = product as any;
+  const primaryImage = productWithImages.images?.find((img: any) => img.is_primary) || productWithImages.images?.[0];
+  const productImageUrl = primaryImage?.image_url || product.image_url || '';
+  
+  structuredData.push(generateProductSchema({
+    name: product.name,
+    description: product.short_description || product.description || '',
+    image: productImageUrl,
+    sku: product.sku || '',
+    price: product.price,
+    currency: 'USD',
+    availability: product.inventory_quantity > 0 ? 'InStock' : 'OutOfStock',
+    brand: {
+      name: 'Vendetta Roasting',
+    },
+    category: product.category_name || '',
+  }));
+
+  // Breadcrumb schema
+  structuredData.push(generateBreadcrumbSchema({
+    items: [
+      { name: 'Home', url: '/' },
+      { name: 'Shop', url: '/shop' },
+      { name: product.name, url: `/shop/${product.slug}` },
+    ],
+  }));
+
   return (
     <>
-      <Head>
-        <title>{product.name} | Vendetta Roasting</title>
-        <meta name="description" content={product.description} />
-      </Head>
+      <SEO
+        title={product.meta_title || product.name}
+        description={product.meta_description || product.short_description || product.description || ''}
+        image={productImageUrl}
+        url={`/shop/${product.slug}`}
+        type="product"
+        structuredData={structuredData}
+        canonical={`/shop/${product.slug}`}
+      />
 
       <div className="bg-cream-light py-12">
         <div className="container mx-auto px-4">
           {/* Breadcrumb */}
-          <nav className="mb-8">
+          <nav className="mb-8" aria-label="Breadcrumb">
             <ol className="flex items-center space-x-2 text-sm">
               <li>
                 <Link href="/" className="text-coffee hover:text-coffee-dark">Home</Link>

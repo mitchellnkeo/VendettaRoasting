@@ -1,5 +1,5 @@
-import Head from 'next/head';
 import { useState, useEffect } from 'react';
+import SEO from '../components/SEO';
 
 interface FAQ {
   _id: string;
@@ -56,10 +56,11 @@ export default function FAQ() {
 
   return (
     <>
-      <Head>
-        <title>Frequently Asked Questions | Vendetta Roasting</title>
-        <meta name="description" content="Find answers to common questions about our coffee, shipping, subscriptions, and more" />
-      </Head>
+      <SEO
+        title="Frequently Asked Questions"
+        description="Find answers to frequently asked questions about Vendetta Roasting, our products, shipping, subscriptions, and more."
+        url="/faq"
+      />
 
       <div className="bg-cream-light min-h-screen py-12">
         <div className="container mx-auto px-4 max-w-4xl">

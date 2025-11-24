@@ -1,9 +1,9 @@
-import Head from 'next/head'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Product, Category } from '../../types/product'
 import ProductImage from '../../components/ProductImage'
 import { useCart } from '../../lib/cart/CartContext'
+import SEO from '../../components/SEO'
 
 export default function Shop() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -115,10 +115,11 @@ export default function Shop() {
 
   return (
     <>
-      <Head>
-        <title>Shop | Vendetta Roasting</title>
-        <meta name="description" content="Shop our selection of premium coffee beans" />
-      </Head>
+      <SEO
+        title="Shop"
+        description="Browse our selection of premium coffee beans, single-origin coffees, and signature blends. Fresh roasted and ethically sourced."
+        url="/shop"
+      />
 
       <div className="bg-cream-light py-12">
         <div className="container mx-auto px-4">

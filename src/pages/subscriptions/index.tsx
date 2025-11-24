@@ -1,8 +1,8 @@
-import Head from 'next/head'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { SUBSCRIPTION_PLANS } from '../../lib/subscription'
+import SEO from '../../components/SEO'
 
 // Frequency options
 const FREQUENCY_OPTIONS = [
@@ -84,10 +84,11 @@ export default function Subscriptions() {
 
   return (
     <>
-      <Head>
-        <title>Coffee Subscriptions | Vendetta Roasting</title>
-        <meta name="description" content="Subscribe to regular coffee deliveries from Vendetta Roasting" />
-      </Head>
+      <SEO
+        title="Coffee Subscriptions"
+        description="Subscribe to regular coffee deliveries from Vendetta Roasting. Save 15% and never run out of great coffee. Choose your frequency, beans, and grind."
+        url="/subscriptions"
+      />
 
       {/* Hero Section */}
       <section className="relative h-[50vh] bg-coffee-dark flex items-center">

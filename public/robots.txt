@@ -1,0 +1,17 @@
+# robots.txt for Vendetta Roasting
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /account/
+Disallow: /checkout
+Disallow: /cart
+Disallow: /orders/
+
+# Sitemap
+Sitemap: https://vendettaroasting.com/sitemap.xml
+
+# Crawl-delay (optional, adjust as needed)
+# Crawl-delay: 1
+

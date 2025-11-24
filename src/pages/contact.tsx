@@ -1,6 +1,6 @@
-import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import SEO from '../components/SEO';
 
 interface ContactPageContent {
   heroTitle: string;
@@ -93,10 +93,11 @@ export default function Contact() {
 
   return (
     <>
-      <Head>
-        <title>Contact Us | Vendetta Roasting</title>
-        <meta name="description" content="Get in touch with Vendetta Roasting. We'd love to hear from you!" />
-      </Head>
+      <SEO
+        title="Contact Us"
+        description="Get in touch with Vendetta Roasting. Visit our location, call us, or send us a message. We'd love to hear from you!"
+        url="/contact"
+      />
 
       <div className="bg-cream-light min-h-screen py-12">
         <div className="container mx-auto px-4">

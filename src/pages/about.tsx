@@ -1,6 +1,6 @@
-import Head from 'next/head';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
+import SEO from '../components/SEO';
 
 interface AboutPageContent {
   heroTitle: string;
@@ -54,10 +54,11 @@ export default function About() {
 
   return (
     <>
-      <Head>
-        <title>About Us | Vendetta Roasting</title>
-        <meta name="description" content="Learn about Vendetta Roasting's passion for exceptional coffee and commitment to ethical sourcing" />
-      </Head>
+      <SEO
+        title="About Us"
+        description="Learn about Vendetta Roasting and our passion for exceptional coffee. Discover our story, mission, and commitment to ethical sourcing."
+        url="/about"
+      />
 
       <div className="bg-cream-light min-h-screen">
         {/* Hero Section */}
