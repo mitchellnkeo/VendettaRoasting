@@ -107,6 +107,34 @@ export default defineType({
       initialValue: 'Start a Subscription',
       validation: (Rule) => Rule.required(),
     }),
+    defineField({
+      name: 'featuredProductsTitle',
+      title: 'Featured Products Section Title',
+      type: 'string',
+      description: 'Title for the featured products section',
+      initialValue: 'Featured Coffees',
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'featuredProductsDescription',
+      title: 'Featured Products Section Description',
+      type: 'text',
+      description: 'Description text shown below the featured products title',
+      rows: 2,
+    }),
+    defineField({
+      name: 'featuredProducts',
+      title: 'Featured Products',
+      type: 'array',
+      description: 'Select up to 6 products to feature on the homepage',
+      of: [
+        {
+          type: 'reference',
+          to: [{ type: 'product' }],
+        },
+      ],
+      validation: (Rule) => Rule.max(6).error('You can feature up to 6 products'),
+    }),
   ],
   preview: {
     select: {

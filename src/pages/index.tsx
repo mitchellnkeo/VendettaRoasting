@@ -5,6 +5,9 @@ import { useState, useEffect } from 'react'
 import Announcements from '../components/Announcements'
 import SEO from '../components/SEO'
 import { generateOrganizationSchema, generateWebsiteSchema } from '../lib/structuredData'
+import { useCart } from '../lib/cart/CartContext'
+import { Product } from '../types/product'
+import ProductImage from '../components/ProductImage'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,12 +23,18 @@ interface HomepageContent {
   subscriptionTitle: string
   subscriptionDescription: string
   subscriptionCtaText: string
+  featuredProductsTitle?: string
+  featuredProductsDescription?: string
+  featuredProducts?: Product[]
 }
 
 export default function Home() {
   const [content, setContent] = useState<HomepageContent | null>(null)
   const [loading, setLoading] = useState(true)
   const [siteSettings, setSiteSettings] = useState<any>(null)
+  const [addingToCart, setAddingToCart] = useState<string | null>(null)
+  const [cartMessage, setCartMessage] = useState<string | null>(null)
+  const { addItem } = useCart()
 
   useEffect(() => {
     fetchHomepageContent()
@@ -85,6 +94,60 @@ export default function Home() {
   }
 
   const displayContent = content || defaultContent
+
+  // Handle adding featured product to cart
+  const handleAddToCart = async (product: Product) => {
+    // Check if product is out of stock
+    if (product.inventory_quantity <= 0) {
+      setCartMessage(`${product.name} is currently out of stock.`)
+      setTimeout(() => setCartMessage(null), 3000)
+      return
+    }
+
+    setAddingToCart(product.id)
+    setCartMessage(null)
+
+    try {
+      // Check inventory before adding
+      const inventoryResponse = await fetch('/api/inventory/check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity: 1
+        })
+      })
+
+      const inventoryData = await inventoryResponse.json()
+
+      if (!inventoryData.success || !inventoryData.data.available) {
+        setCartMessage(`${product.name} is currently out of stock.`)
+        setTimeout(() => setCartMessage(null), 3000)
+        setAddingToCart(null)
+        return
+      }
+
+      // Add item to cart
+      addItem({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image_url || '/images/placeholder.jpg',
+        slug: product.slug
+      })
+
+      setCartMessage(`Added ${product.name} to cart!`)
+      setTimeout(() => setCartMessage(null), 3000)
+    } catch (error) {
+      console.error('Error adding to cart:', error)
+      setCartMessage('Failed to add item to cart. Please try again.')
+      setTimeout(() => setCartMessage(null), 3000)
+    } finally {
+      setAddingToCart(null)
+    }
+  }
 
   // Generate structured data
   const structuredData = [];
@@ -170,33 +233,96 @@ export default function Home() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-20 bg-cream-light">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-coffee-dark mb-4">Featured Coffees</h2>
-            <p className="text-lg text-coffee max-w-2xl mx-auto">Discover our most beloved blends, carefully crafted for the perfect cup</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[1, 2, 3].map((item) => (
-              <div key={item} className="bg-white rounded-2xl shadow-soft overflow-hidden hover:shadow-warm-lg transition-all duration-400 transform hover:-translate-y-2 group">
-                <div className="h-64 bg-gradient-to-br from-coffee-light to-coffee-dark relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-coffee-dark mb-3 group-hover:text-coffee-light transition-colors duration-300">Signature Blend #{item}</h3>
-                  <p className="text-coffee mb-6 leading-relaxed">A rich and balanced coffee with notes of chocolate, caramel, and a hint of citrus.</p>
-                  <div className="flex justify-between items-center">
-                    <span className="text-2xl font-bold text-coffee-dark">$18.99</span>
-                    <button className="bg-coffee hover:bg-coffee-light text-cream-light px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-soft hover:shadow-warm hover:scale-105 transform">
-                      Add to Cart
-                    </button>
+      {displayContent.featuredProducts && displayContent.featuredProducts.length > 0 && (
+        <section className="py-20 bg-cream-light">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold text-coffee-dark mb-4">
+                {displayContent.featuredProductsTitle || 'Featured Coffees'}
+              </h2>
+              {displayContent.featuredProductsDescription && (
+                <p className="text-lg text-coffee max-w-2xl mx-auto">
+                  {displayContent.featuredProductsDescription}
+                </p>
+              )}
+            </div>
+
+            {/* Cart Message */}
+            {cartMessage && (
+              <div className={`mb-6 p-4 rounded-xl max-w-2xl mx-auto ${
+                cartMessage.includes('Added')
+                  ? 'bg-green-50 border border-green-200 text-green-800'
+                  : 'bg-red-50 border border-red-200 text-red-800'
+              }`}>
+                {cartMessage}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {displayContent.featuredProducts.map((product) => (
+                <div key={product.id} className="bg-white rounded-2xl shadow-soft overflow-hidden hover:shadow-warm-lg transition-all duration-400 transform hover:-translate-y-2 group">
+                  <Link href={`/shop/${product.slug}`}>
+                    <div className="relative overflow-hidden">
+                      <ProductImage 
+                        productId={product.id}
+                        className="h-64 cursor-pointer group-hover:scale-110 transition-transform duration-500"
+                        alt={product.name}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                  </Link>
+                  <div className="p-6">
+                    <Link href={`/shop/${product.slug}`}>
+                      <h3 className="text-xl font-bold text-coffee-dark mb-3 group-hover:text-coffee-light transition-colors duration-300 cursor-pointer">
+                        {product.name}
+                      </h3>
+                    </Link>
+                    <p className="text-coffee mb-6 leading-relaxed line-clamp-2">
+                      {product.short_description || product.description}
+                    </p>
+                    <div className="mb-4">
+                      {product.inventory_quantity > 0 ? (
+                        <span className="inline-flex items-center text-sm text-green-600 font-semibold">
+                          <span className="w-2 h-2 bg-green-600 rounded-full mr-2"></span>
+                          In Stock
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center text-sm text-red-600 font-semibold">
+                          <span className="w-2 h-2 bg-red-600 rounded-full mr-2"></span>
+                          Out of Stock
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-2xl font-bold text-coffee-dark">${product.price.toFixed(2)}</span>
+                      <button 
+                        onClick={() => handleAddToCart(product)}
+                        disabled={addingToCart === product.id || product.inventory_quantity === 0}
+                        className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform ${
+                          addingToCart === product.id || product.inventory_quantity === 0
+                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                            : 'bg-coffee hover:bg-coffee-light text-cream-light shadow-soft hover:shadow-warm hover:scale-105'
+                        }`}
+                      >
+                        {addingToCart === product.id ? (
+                          <div className="flex items-center">
+                            <div className="w-4 h-4 border-2 border-cream-light border-t-transparent rounded-full animate-spin mr-2" />
+                            Adding...
+                          </div>
+                        ) : product.inventory_quantity === 0 ? (
+                          'Out of Stock'
+                        ) : (
+                          'Add to Cart'
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* About Section */}
       <section className="py-20 bg-gradient-to-br from-coffee via-coffee-light to-coffee text-cream-light relative overflow-hidden">

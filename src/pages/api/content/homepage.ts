@@ -19,7 +19,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       aboutCtaText,
       subscriptionTitle,
       subscriptionDescription,
-      subscriptionCtaText
+      subscriptionCtaText,
+      featuredProductsTitle,
+      featuredProductsDescription,
+      featuredProducts[]->{
+        _id,
+        name,
+        slug,
+        description,
+        shortDescription,
+        price,
+        wholesalePrice,
+        sku,
+        category->{
+          _id,
+          name,
+          slug
+        },
+        weightGrams,
+        origin,
+        roastLevel,
+        flavorNotes,
+        images,
+        isActive,
+        isFeatured,
+        inventoryQuantity,
+        metaTitle,
+        metaDescription
+      }
     }`;
 
     const homepage = await sanityClient.fetch(query);
@@ -55,9 +82,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Transform hero image if it exists
+    // Transform featured products if they exist
+    const transformedFeaturedProducts = homepage.featuredProducts
+      ? homepage.featuredProducts
+          .filter((product: any) => product && product.isActive !== false) // Only include active products
+          .map((product: any) => {
+            // Get primary image or first image
+            const primaryImage = product.images?.find((img: any) => img.isPrimary) || product.images?.[0];
+            const imageUrl = primaryImage
+              ? urlFor(primaryImage).width(800).height(800).url()
+              : '/images/placeholder-coffee.jpg';
+
+            return {
+              id: product._id,
+              name: product.name,
+              slug: product.slug?.current || '',
+              description: product.description || '',
+              short_description: product.shortDescription || '',
+              price: product.price || 0,
+              wholesale_price: product.wholesalePrice || undefined,
+              sku: product.sku || '',
+              category_id: product.category?._id || '',
+              category_name: product.category?.name || '',
+              weight_grams: product.weightGrams || undefined,
+              origin: product.origin || undefined,
+              roast_level: product.roastLevel || undefined,
+              flavor_notes: product.flavorNotes || undefined,
+              image_url: imageUrl,
+              is_active: product.isActive !== false,
+              is_featured: product.isFeatured || false,
+              inventory_quantity: product.inventoryQuantity || 0,
+              meta_title: product.metaTitle || undefined,
+              meta_description: product.metaDescription || undefined,
+            };
+          })
+      : [];
+
     const transformedData = {
       ...homepage,
       heroImage: homepage.heroImage ? urlFor(homepage.heroImage).width(1920).height(1080).url() : null,
+      featuredProducts: transformedFeaturedProducts,
     };
 
     res.status(200).json({
