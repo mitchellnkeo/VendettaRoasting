@@ -205,42 +205,44 @@ export default function ProductDetail() {
           <nav className="mb-8" aria-label="Breadcrumb">
             <ol className="flex items-center space-x-2 text-sm">
               <li>
-                <Link href="/" className="text-coffee hover:text-coffee-dark">Home</Link>
+                <Link href="/" className="text-coffee hover:text-coffee-dark transition-colors duration-300">Home</Link>
               </li>
-              <li className="text-coffee">/</li>
+              <li className="text-coffee-light">/</li>
               <li>
-                <Link href="/shop" className="text-coffee hover:text-coffee-dark">Shop</Link>
+                <Link href="/shop" className="text-coffee hover:text-coffee-dark transition-colors duration-300">Shop</Link>
               </li>
-              <li className="text-coffee">/</li>
-              <li className="text-coffee-dark font-medium">{product.name}</li>
+              <li className="text-coffee-light">/</li>
+              <li className="text-coffee-dark font-semibold">{product.name}</li>
             </ol>
           </nav>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Product Image */}
             <div>
-              <ProductImage 
-                productId={product.id}
-                className="h-96 lg:h-[500px] rounded-lg"
-                alt={product.name}
-                priority={true}
-              />
+              <div className="rounded-2xl overflow-hidden shadow-warm-lg">
+                <ProductImage 
+                  productId={product.id}
+                  className="h-96 lg:h-[500px] w-full object-cover"
+                  alt={product.name}
+                  priority={true}
+                />
+              </div>
               {/* TODO: Add image gallery when multiple images are implemented */}
             </div>
 
             {/* Product Details */}
             <div>
-              <div className="mb-4">
-                <span className="bg-cream px-3 py-1 text-sm rounded-full text-coffee">
+              <div className="mb-6">
+                <span className="bg-cream px-4 py-2 text-sm font-semibold rounded-full text-coffee shadow-soft inline-block">
                   {product.category_name}
                 </span>
               </div>
 
-              <h1 className="text-3xl lg:text-4xl font-bold text-coffee-dark mb-4">
+              <h1 className="text-4xl lg:text-5xl font-bold text-coffee-dark mb-6 leading-tight">
                 {product.name}
               </h1>
 
-              <p className="text-xl text-coffee mb-6">
+              <p className="text-lg text-coffee mb-8 leading-relaxed">
                 {product.description}
               </p>
 
@@ -280,23 +282,29 @@ export default function ProductDetail() {
               )}
 
               {/* Price and Add to Cart */}
-              <div className="border-t border-gray-200 pt-6">
-                <div className="flex items-center justify-between mb-6">
+              <div className="border-t border-cream pt-8 mt-8">
+                <div className="flex items-center justify-between mb-8">
                   <div>
-                    <span className="text-3xl font-bold text-coffee-dark">
+                    <span className="text-4xl font-bold text-coffee-dark">
                       ${product.price.toFixed(2)}
                     </span>
                     {product.wholesale_price && (
-                      <p className="text-sm text-coffee">
+                      <p className="text-sm text-coffee mt-2">
                         Wholesale: ${product.wholesale_price.toFixed(2)}
                       </p>
                     )}
                   </div>
-                  <div className="text-sm text-coffee">
+                  <div className="text-sm">
                     {product.inventory_quantity > 0 ? (
-                      <span className="text-green-600">In Stock</span>
+                      <span className="inline-flex items-center text-green-600 font-semibold">
+                        <span className="w-2 h-2 bg-green-600 rounded-full mr-2"></span>
+                        In Stock
+                      </span>
                     ) : (
-                      <span className="text-red-600">Out of Stock</span>
+                      <span className="inline-flex items-center text-red-600 font-semibold">
+                        <span className="w-2 h-2 bg-red-600 rounded-full mr-2"></span>
+                        Out of Stock
+                      </span>
                     )}
                   </div>
                 </div>
@@ -346,10 +354,10 @@ export default function ProductDetail() {
                 <button
                   onClick={handleAddToCart}
                   disabled={product.inventory_quantity === 0 || addingToCart}
-                  className={`w-full py-3 px-6 rounded-md font-medium transition-colors ${
+                  className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 transform ${
                     product.inventory_quantity > 0 && !addingToCart
-                      ? 'bg-coffee text-cream-light hover:bg-coffee-light'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      ? 'bg-coffee text-cream-light hover:bg-coffee-light shadow-warm-lg hover:shadow-warm hover:scale-105'
+                      : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                   }`}
                 >
                   {addingToCart ? (

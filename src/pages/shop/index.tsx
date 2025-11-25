@@ -121,26 +121,26 @@ export default function Shop() {
         url="/shop"
       />
 
-      <div className="bg-cream-light py-12">
+      <div className="bg-cream-light py-16">
         <div className="container mx-auto px-4">
           {/* Page Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-coffee-dark mb-4">Shop Our Coffee</h1>
-            <p className="text-coffee max-w-2xl mx-auto">
+          <div className="text-center mb-16">
+            <h1 className="text-5xl md:text-6xl font-bold text-coffee-dark mb-6 leading-tight">Shop Our Coffee</h1>
+            <p className="text-lg text-coffee max-w-3xl mx-auto leading-relaxed">
               Explore our selection of ethically sourced, freshly roasted coffee beans. 
               Each batch is roasted to perfection to bring out the unique characteristics of the beans.
             </p>
           </div>
 
           {/* Category Filter */}
-          <div className="flex flex-wrap justify-center gap-2 mb-8">
+          <div className="flex flex-wrap justify-center gap-3 mb-12">
             <button
               onClick={() => setSelectedCategory('All')}
-              className={`px-4 py-2 rounded-full ${
+              className={`px-6 py-3 rounded-full font-medium ${
                 selectedCategory === 'All'
-                  ? 'bg-coffee text-cream-light'
-                  : 'bg-cream text-coffee hover:bg-coffee-light hover:text-cream-light'
-              } transition-colors`}
+                  ? 'bg-coffee text-cream-light shadow-warm'
+                  : 'bg-white text-coffee hover:bg-coffee-light hover:text-cream-light shadow-soft hover:shadow-warm'
+              } transition-all duration-300 transform hover:scale-105`}
             >
               All
             </button>
@@ -148,11 +148,11 @@ export default function Shop() {
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.name)}
-                className={`px-4 py-2 rounded-full ${
+                className={`px-6 py-3 rounded-full font-medium ${
                   selectedCategory === category.name
-                    ? 'bg-coffee text-cream-light'
-                    : 'bg-cream text-coffee hover:bg-coffee-light hover:text-cream-light'
-                } transition-colors`}
+                    ? 'bg-coffee text-cream-light shadow-warm'
+                    : 'bg-white text-coffee hover:bg-coffee-light hover:text-cream-light shadow-soft hover:shadow-warm'
+                } transition-all duration-300 transform hover:scale-105`}
               >
                 {category.name}
               </button>
@@ -200,42 +200,51 @@ export default function Shop() {
                 </div>
               ) : (
                 filteredProducts.map((product) => (
-                  <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                  <div key={product.id} className="bg-white rounded-2xl shadow-soft overflow-hidden hover:shadow-warm-lg transition-all duration-400 transform hover:-translate-y-2 group">
                     <Link href={`/shop/${product.slug}`}>
-                      <ProductImage 
-                        productId={product.id}
-                        className="h-64 cursor-pointer"
-                        alt={product.name}
-                      />
+                      <div className="relative overflow-hidden">
+                        <ProductImage 
+                          productId={product.id}
+                          className="h-64 cursor-pointer group-hover:scale-110 transition-transform duration-500"
+                          alt={product.name}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      </div>
                     </Link>
                     <div className="p-6">
-                      <div className="flex justify-between items-start mb-2">
+                      <div className="flex justify-between items-start mb-3">
                         <Link href={`/shop/${product.slug}`}>
-                          <h2 className="text-xl font-semibold text-coffee-dark hover:text-coffee-light cursor-pointer">
+                          <h2 className="text-xl font-bold text-coffee-dark hover:text-coffee-light cursor-pointer transition-colors duration-300 group-hover:text-coffee-light">
                             {product.name}
                           </h2>
                         </Link>
-                        <span className="bg-cream px-2 py-1 text-xs rounded-full text-coffee">
+                        <span className="bg-cream px-3 py-1 text-xs font-medium rounded-full text-coffee shadow-soft">
                           {product.category_name}
                         </span>
                       </div>
-                      <p className="text-coffee mb-4">{product.description}</p>
-                      <div className="mb-2">
+                      <p className="text-coffee mb-4 leading-relaxed line-clamp-2">{product.description}</p>
+                      <div className="mb-4">
                         {product.inventory_quantity > 0 ? (
-                          <span className="text-sm text-green-600 font-medium">In Stock</span>
+                          <span className="inline-flex items-center text-sm text-green-600 font-semibold">
+                            <span className="w-2 h-2 bg-green-600 rounded-full mr-2"></span>
+                            In Stock
+                          </span>
                         ) : (
-                          <span className="text-sm text-red-600 font-medium">Out of Stock</span>
+                          <span className="inline-flex items-center text-sm text-red-600 font-semibold">
+                            <span className="w-2 h-2 bg-red-600 rounded-full mr-2"></span>
+                            Out of Stock
+                          </span>
                         )}
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-lg font-bold text-coffee-dark">${product.price.toFixed(2)}</span>
+                        <span className="text-2xl font-bold text-coffee-dark">${product.price.toFixed(2)}</span>
                         <button 
                           onClick={() => handleAddToCart(product)}
                           disabled={addingToCart === product.id || product.inventory_quantity === 0}
-                          className={`px-4 py-2 rounded-md transition-colors ${
+                          className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform ${
                             addingToCart === product.id || product.inventory_quantity === 0
-                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                              : 'bg-coffee hover:bg-coffee-light text-cream-light'
+                              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                              : 'bg-coffee hover:bg-coffee-light text-cream-light shadow-soft hover:shadow-warm hover:scale-105'
                           }`}
                         >
                           {addingToCart === product.id ? (

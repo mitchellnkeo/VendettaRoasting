@@ -135,7 +135,7 @@ export default function Home() {
       <Announcements />
       
       {/* Hero Section */}
-      <section className="relative h-[80vh] bg-coffee-dark flex items-center">
+      <section className="relative h-[85vh] min-h-[600px] bg-coffee-dark flex items-center overflow-hidden">
         {/* Background Image */}
         {displayContent.heroImage && (
           <div className="absolute inset-0 z-0">
@@ -148,21 +148,21 @@ export default function Home() {
             />
           </div>
         )}
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black opacity-50 z-10"></div>
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70 z-10"></div>
         {/* Content */}
         <div className="container mx-auto px-4 z-20 text-center relative">
-          <h1 className="text-5xl md:text-6xl font-bold text-cream-light mb-6">
+          <h1 className="text-5xl md:text-7xl font-bold text-cream-light mb-6 leading-tight tracking-tight">
             {displayContent.title}
           </h1>
-          <p className="text-xl md:text-2xl text-cream mb-8 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl text-cream-light mb-10 max-w-3xl mx-auto leading-relaxed font-light">
             {displayContent.heroSubtitle}
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="/shop" className="bg-coffee hover:bg-coffee-light text-cream-light px-8 py-3 rounded-md text-lg font-medium transition-colors">
+            <Link href="/shop" className="bg-coffee hover:bg-coffee-light text-cream-light px-10 py-4 rounded-xl text-lg font-semibold transition-all duration-300 shadow-warm-lg hover:shadow-warm hover:scale-105 transform">
               {displayContent.heroCtaPrimary}
             </Link>
-            <Link href="/subscriptions" className="bg-transparent hover:bg-cream-light hover:text-coffee border-2 border-cream-light text-cream-light hover:border-cream-light px-8 py-3 rounded-md text-lg font-medium transition-colors">
+            <Link href="/subscriptions" className="bg-transparent hover:bg-cream-light hover:text-coffee border-2 border-cream-light text-cream-light px-10 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-105 transform backdrop-blur-sm">
               {displayContent.heroCtaSecondary}
             </Link>
           </div>
@@ -170,19 +170,24 @@ export default function Home() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-16 bg-cream-light">
+      <section className="py-20 bg-cream-light">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-coffee-dark text-center mb-12">Featured Coffees</h2>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-coffee-dark mb-4">Featured Coffees</h2>
+            <p className="text-lg text-coffee max-w-2xl mx-auto">Discover our most beloved blends, carefully crafted for the perfect cup</p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[1, 2, 3].map((item) => (
-              <div key={item} className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="h-64 bg-gray-200"></div>
+              <div key={item} className="bg-white rounded-2xl shadow-soft overflow-hidden hover:shadow-warm-lg transition-all duration-400 transform hover:-translate-y-2 group">
+                <div className="h-64 bg-gradient-to-br from-coffee-light to-coffee-dark relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-semibold text-coffee-dark mb-2">Signature Blend #{item}</h3>
-                  <p className="text-coffee mb-4">A rich and balanced coffee with notes of chocolate, caramel, and a hint of citrus.</p>
+                  <h3 className="text-xl font-bold text-coffee-dark mb-3 group-hover:text-coffee-light transition-colors duration-300">Signature Blend #{item}</h3>
+                  <p className="text-coffee mb-6 leading-relaxed">A rich and balanced coffee with notes of chocolate, caramel, and a hint of citrus.</p>
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold text-coffee-dark">$18.99</span>
-                    <button className="bg-coffee hover:bg-coffee-light text-cream-light px-4 py-2 rounded-md transition-colors">
+                    <span className="text-2xl font-bold text-coffee-dark">$18.99</span>
+                    <button className="bg-coffee hover:bg-coffee-light text-cream-light px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-soft hover:shadow-warm hover:scale-105 transform">
                       Add to Cart
                     </button>
                   </div>
@@ -194,20 +199,27 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <section className="py-16 bg-coffee text-cream-light">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="md:w-1/2 mb-8 md:mb-0">
-              <div className="bg-gray-300 h-96 w-full rounded-lg"></div>
+      <section className="py-20 bg-gradient-to-br from-coffee via-coffee-light to-coffee text-cream-light relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(240,230,217,0.15) 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
+        </div>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="flex flex-col md:flex-row items-center gap-12">
+            <div className="md:w-1/2">
+              <div className="bg-gradient-to-br from-cream-dark to-cream h-96 w-full rounded-2xl shadow-warm-lg overflow-hidden">
+                <div className="h-full w-full bg-gradient-to-br from-coffee-dark/20 to-coffee-light/20"></div>
+              </div>
             </div>
-            <div className="md:w-1/2 md:pl-12">
-              <h2 className="text-3xl font-bold mb-6">{displayContent.aboutTitle}</h2>
-              {displayContent.aboutContent.map((item, index) => (
-                <p key={index} className="mb-6">
-                  {item.paragraph}
-                </p>
-              ))}
-              <Link href="/about" className="inline-block border-2 border-cream-light hover:bg-cream-light hover:text-coffee px-6 py-3 rounded-md transition-colors">
+            <div className="md:w-1/2">
+              <h2 className="text-4xl md:text-5xl font-bold mb-8 leading-tight">{displayContent.aboutTitle}</h2>
+              <div className="space-y-6 mb-8">
+                {displayContent.aboutContent.map((item, index) => (
+                  <p key={index} className="text-lg leading-relaxed text-cream-light/95">
+                    {item.paragraph}
+                  </p>
+                ))}
+              </div>
+              <Link href="/about" className="inline-block border-2 border-cream-light hover:bg-cream-light hover:text-coffee px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-soft hover:shadow-warm hover:scale-105 transform">
                 {displayContent.aboutCtaText}
               </Link>
             </div>
@@ -216,13 +228,16 @@ export default function Home() {
       </section>
 
       {/* Subscription Highlight */}
-      <section className="py-16 bg-cream">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-coffee-dark mb-6">{displayContent.subscriptionTitle}</h2>
-          <p className="text-xl text-coffee mb-8 max-w-2xl mx-auto">
+      <section className="py-20 bg-gradient-to-br from-cream via-cream-light to-cream relative overflow-hidden">
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(58,38,24,0.1) 1px, transparent 0)', backgroundSize: '50px 50px' }}></div>
+        </div>
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <h2 className="text-4xl md:text-5xl font-bold text-coffee-dark mb-6 leading-tight">{displayContent.subscriptionTitle}</h2>
+          <p className="text-xl text-coffee mb-10 max-w-3xl mx-auto leading-relaxed">
             {displayContent.subscriptionDescription}
           </p>
-          <Link href="/subscriptions" className="bg-coffee hover:bg-coffee-light text-cream-light px-8 py-3 rounded-md text-lg font-medium transition-colors">
+          <Link href="/subscriptions" className="inline-block bg-coffee hover:bg-coffee-light text-cream-light px-10 py-4 rounded-xl text-lg font-semibold transition-all duration-300 shadow-warm-lg hover:shadow-warm hover:scale-105 transform">
             {displayContent.subscriptionCtaText}
           </Link>
         </div>
