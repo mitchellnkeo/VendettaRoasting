@@ -22,6 +22,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { name: 'Products', href: '/admin/products', icon: '☕' },
     { name: 'Customers', href: '/admin/customers', icon: '👥' },
     { name: 'Subscriptions', href: '/admin/subscriptions', icon: '🔄' },
+    { name: 'Reviews', href: '/admin/reviews', icon: '⭐' },
   ];
 
   return (

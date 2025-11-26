@@ -7,6 +7,8 @@ import { useCart } from '../../lib/cart/CartContext'
 import SEO from '../../components/SEO'
 import { generateProductSchema, generateBreadcrumbSchema } from '../../lib/structuredData'
 import { urlFor } from '../../lib/sanity'
+import ReviewForm from '../../components/ReviewForm'
+import ReviewsList from '../../components/ReviewsList'
 
 export default function ProductDetail() {
   const router = useRouter()
@@ -371,6 +373,33 @@ export default function ProductDetail() {
                     'Out of Stock'
                   )}
                 </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Reviews Section */}
+          <div className="mt-16 border-t border-cream pt-12">
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold text-coffee-dark mb-2">Customer Reviews</h2>
+              <p className="text-coffee">Share your experience with this product</p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Review Form */}
+              <div>
+                <ReviewForm 
+                  productId={product.id} 
+                  productName={product.name}
+                  onSubmitSuccess={() => {
+                    // Optionally refresh reviews list
+                    window.location.reload();
+                  }}
+                />
+              </div>
+
+              {/* Reviews List */}
+              <div>
+                <ReviewsList productId={product.id} />
               </div>
             </div>
           </div>
