@@ -1,10 +1,25 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createWholesaleApplicationEmail, createWholesaleApplicationConfirmation, sendEmail } from '../../../lib/email';
 import { query } from '../../../lib/database';
+import { createRateLimit, RATE_LIMITS } from '../../../lib/rateLimit';
+import { validateRecaptcha } from '../../../lib/recaptcha';
+import { sanitizeString, sanitizeEmail, sanitizeText, sanitizePhone } from '../../../lib/sanitize';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
+  }
+
+  // Rate limiting
+  const rateLimit = createRateLimit(RATE_LIMITS.WHOLESALE);
+  const rateLimitResult = rateLimit(req);
+
+  if (!rateLimitResult.allowed) {
+    return res.status(429).json({
+      success: false,
+      message: 'Too many requests. Please try again later.',
+      retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000),
+    });
   }
 
   try {
@@ -15,23 +30,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       phone, 
       businessAddress, 
       businessType, 
-      message 
+      message,
+      recaptchaToken
     } = req.body;
 
+    // Verify reCAPTCHA
+    if (process.env.RECAPTCHA_SECRET_KEY) {
+      const recaptchaValid = await validateRecaptcha(recaptchaToken);
+      if (!recaptchaValid) {
+        return res.status(400).json({
+          success: false,
+          message: 'reCAPTCHA verification failed. Please try again.',
+        });
+      }
+    }
+
+    // Sanitize inputs
+    const sanitizedBusinessName = sanitizeString(businessName);
+    const sanitizedContactName = sanitizeString(contactName);
+    const sanitizedEmail = sanitizeEmail(email);
+    const sanitizedPhone = sanitizePhone(phone);
+    const sanitizedBusinessAddress = sanitizeText(businessAddress);
+    const sanitizedBusinessType = sanitizeString(businessType);
+    const sanitizedMessage = sanitizeText(message);
+
     // Validate required fields
-    if (!businessName || !contactName || !email || !phone || !businessAddress || !businessType) {
+    if (!sanitizedBusinessName || !sanitizedContactName || !sanitizedEmail || !sanitizedPhone || !sanitizedBusinessAddress || !sanitizedBusinessType) {
       return res.status(400).json({
         success: false,
         message: 'All required fields must be filled in'
-      });
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid email address'
       });
     }
 
@@ -50,13 +77,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           created_at
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
         [
-          businessName,
-          contactName,
-          email,
-          phone,
-          businessAddress,
-          businessType,
-          message || null,
+          sanitizedBusinessName,
+          sanitizedContactName,
+          sanitizedEmail,
+          sanitizedPhone,
+          sanitizedBusinessAddress,
+          sanitizedBusinessType,
+          sanitizedMessage || null,
           'pending'
         ]
       );
@@ -72,25 +99,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Send email to admin
     const adminEmail = createWholesaleApplicationEmail({
-      businessName,
-      contactName,
-      email,
-      phone,
-      businessAddress,
-      businessType,
-      message: message || ''
+      businessName: sanitizedBusinessName,
+      contactName: sanitizedContactName,
+      email: sanitizedEmail,
+      phone: sanitizedPhone,
+      businessAddress: sanitizedBusinessAddress,
+      businessType: sanitizedBusinessType,
+      message: sanitizedMessage || ''
     });
     const adminEmailSent = await sendEmail(adminEmail);
 
     // Send confirmation to applicant
     const confirmationEmail = createWholesaleApplicationConfirmation({
-      businessName,
-      contactName,
-      email,
-      phone,
-      businessAddress,
-      businessType,
-      message: message || ''
+      businessName: sanitizedBusinessName,
+      contactName: sanitizedContactName,
+      email: sanitizedEmail,
+      phone: sanitizedPhone,
+      businessAddress: sanitizedBusinessAddress,
+      businessType: sanitizedBusinessType,
+      message: sanitizedMessage || ''
     });
     const confirmationEmailSent = await sendEmail(confirmationEmail);
 

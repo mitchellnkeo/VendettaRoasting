@@ -2,6 +2,16 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import SEO from '../components/SEO';
 
+// Declare grecaptcha for TypeScript
+declare global {
+  interface Window {
+    grecaptcha: {
+      ready: (callback: () => void) => void;
+      execute: (siteKey: string, options: { action: string }) => Promise<string>;
+    };
+  }
+}
+
 interface ContactPageContent {
   heroTitle: string;
   heroSubtitle: string;
@@ -45,18 +55,49 @@ export default function Contact() {
     };
 
     fetchContent();
+
+    // Load reCAPTCHA script if configured
+    if (process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && !window.grecaptcha) {
+      const script = document.createElement('script');
+      script.src = `https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`;
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
+      // Get reCAPTCHA token if configured
+      let recaptchaToken = '';
+      if (process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && window.grecaptcha) {
+        try {
+          await new Promise<void>((resolve) => {
+            window.grecaptcha.ready(() => {
+              resolve();
+            });
+          });
+          recaptchaToken = await window.grecaptcha.execute(
+            process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
+            { action: 'contact_form' }
+          );
+        } catch (error) {
+          console.error('reCAPTCHA error:', error);
+          // Continue without token if reCAPTCHA fails
+        }
+      }
+
       const response = await fetch('/api/contact/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          recaptchaToken,
+        }),
       });
 
       const data = await response.json();

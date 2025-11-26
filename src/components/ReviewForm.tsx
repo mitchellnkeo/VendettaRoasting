@@ -1,4 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+// Declare grecaptcha for TypeScript
+declare global {
+  interface Window {
+    grecaptcha: {
+      ready: (callback: () => void) => void;
+      execute: (siteKey: string, options: { action: string }) => Promise<string>;
+    };
+  }
+}
 
 interface ReviewFormProps {
   productId: string;
@@ -15,6 +25,17 @@ export default function ReviewForm({ productId, productName, onSubmitSuccess }: 
   const [reviewerEmail, setReviewerEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  useEffect(() => {
+    // Load reCAPTCHA script if configured
+    if (process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && !window.grecaptcha) {
+      const script = document.createElement('script');
+      script.src = `https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`;
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +64,25 @@ export default function ReviewForm({ productId, productName, onSubmitSuccess }: 
     setMessage(null);
 
     try {
+      // Get reCAPTCHA token if configured
+      let recaptchaToken = '';
+      if (process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && window.grecaptcha) {
+        try {
+          await new Promise<void>((resolve) => {
+            window.grecaptcha.ready(() => {
+              resolve();
+            });
+          });
+          recaptchaToken = await window.grecaptcha.execute(
+            process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
+            { action: 'review_form' }
+          );
+        } catch (error) {
+          console.error('reCAPTCHA error:', error);
+          // Continue without token if reCAPTCHA fails
+        }
+      }
+
       const response = await fetch('/api/reviews', {
         method: 'POST',
         headers: {
@@ -55,6 +95,7 @@ export default function ReviewForm({ productId, productName, onSubmitSuccess }: 
           comment: comment.trim(),
           reviewerName: reviewerName.trim(),
           reviewerEmail: reviewerEmail.trim(),
+          recaptchaToken,
         }),
       });
 
