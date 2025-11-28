@@ -69,3 +69,6 @@ if (typeof window !== 'undefined' && !(window as any).__SENTRY_INITIALIZED__) {
   });
 }
 
+// Export router transition hook for navigation instrumentation
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+
