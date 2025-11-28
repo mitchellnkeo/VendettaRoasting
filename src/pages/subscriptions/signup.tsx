@@ -120,6 +120,18 @@ export default function SubscriptionSignup() {
       const result = await response.json()
 
       if (result.success) {
+        // Track subscription signup
+        if (typeof window !== 'undefined' && window.gtag) {
+          const { trackSubscriptionSignup } = require('../../lib/analytics');
+          const selectedPlanData = plans.find((p: SubscriptionPlan) => p.id === selectedPlan);
+          trackSubscriptionSignup({
+            subscription_id: result.data.subscriptionId,
+            value: selectedPlanData?.price || 0,
+            currency: 'USD',
+            plan_name: selectedPlanData?.name || selectedPlan,
+          });
+        }
+        
         setSuccess(`Subscription created successfully! Subscription ID: ${result.data.subscriptionId}`)
         // Reset form
         setSelectedPlan('')

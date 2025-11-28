@@ -46,6 +46,18 @@ export default function ProductDetail() {
     fetchProduct()
   }, [slug])
 
+  // Track view item when product loads
+  useEffect(() => {
+    if (product && typeof window !== 'undefined' && window.gtag) {
+      trackViewItem({
+        item_id: product.id,
+        item_name: product.name,
+        item_category: product.category_name || undefined,
+        price: product.price,
+      });
+    }
+  }, [product])
+
   const handleAddToCart = async () => {
     if (!product) return
 
@@ -102,6 +114,17 @@ export default function ProductDetail() {
           image: product.image_url || '/images/placeholder.jpg',
           slug: product.slug
         })
+      }
+
+      // Track add to cart event
+      if (typeof window !== 'undefined' && window.gtag) {
+        trackAddToCart({
+          item_id: product.id,
+          item_name: product.name,
+          item_category: product.category_name || undefined,
+          price: product.price,
+          quantity: quantity,
+        });
       }
 
       setCartMessage(`Added ${quantity} ${quantity === 1 ? 'item' : 'items'} to cart!`)

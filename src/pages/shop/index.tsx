@@ -100,6 +100,17 @@ export default function Shop() {
         slug: product.slug
       });
 
+      // Track add to cart event
+      if (typeof window !== 'undefined' && window.gtag) {
+        trackAddToCart({
+          item_id: product.id,
+          item_name: product.name,
+          item_category: product.category_name || undefined,
+          price: product.price,
+          quantity: 1,
+        });
+      }
+
       setCartMessage(`Added ${product.name} to cart!`);
 
       // Clear message after 3 seconds

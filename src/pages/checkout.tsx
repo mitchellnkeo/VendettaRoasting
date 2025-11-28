@@ -62,6 +62,22 @@ export default function Checkout() {
     setUseSavedAddress(true)
   }
 
+  // Track begin checkout when component mounts with items
+  useEffect(() => {
+    if (items.length > 0 && typeof window !== 'undefined' && window.gtag) {
+      trackBeginCheckout({
+        value: totalPrice,
+        currency: 'USD',
+        items: items.map(item => ({
+          item_id: item.id,
+          item_name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+      });
+    }
+  }, []); // Only run once on mount
+
   const handlePaymentSuccess = async (paymentIntent: any) => {
     setPaymentStep('processing')
     setPaymentError(null)
@@ -101,6 +117,22 @@ export default function Checkout() {
 
       if (result.success) {
         setOrderId(result.data.orderId)
+        
+        // Track purchase conversion
+        if (typeof window !== 'undefined' && window.gtag) {
+          trackPurchase({
+            transaction_id: result.data.orderId,
+            value: totalPrice,
+            currency: 'USD',
+            items: items.map(item => ({
+              item_id: item.id,
+              item_name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+            })),
+          });
+        }
+        
         setPaymentStep('success')
         
         // Don't clear cart here - let user see success page first
