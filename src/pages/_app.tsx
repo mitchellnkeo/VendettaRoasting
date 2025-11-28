@@ -27,6 +27,24 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
       if (process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID) {
         trackPageView(url);
       }
+      
+      // Track performance with Sentry
+      if (typeof window !== 'undefined' && window.performance && process.env.NEXT_PUBLIC_SENTRY_DSN) {
+        const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+        if (navigation) {
+          const Sentry = require('@sentry/nextjs');
+          Sentry.addBreadcrumb({
+            category: 'navigation',
+            message: `Page loaded: ${url}`,
+            level: 'info',
+            data: {
+              url,
+              loadTime: navigation.loadEventEnd - navigation.fetchStart,
+              domContentLoaded: navigation.domContentLoadedEventEnd - navigation.fetchStart,
+            },
+          });
+        }
+      }
     };
 
     router.events.on('routeChangeComplete', handleRouteChange);
