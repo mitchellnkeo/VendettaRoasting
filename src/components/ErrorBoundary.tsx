@@ -6,7 +6,6 @@
  */
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import * as Sentry from '@sentry/nextjs';
 import Link from 'next/link';
 
 interface Props {
@@ -37,14 +36,25 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log error to Sentry
-    Sentry.captureException(error, {
-      contexts: {
-        react: {
-          componentStack: errorInfo.componentStack,
-        },
-      },
-    });
+    // Log error to Sentry (if available)
+    try {
+      if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SENTRY_DSN) {
+        // Dynamically import Sentry to avoid issues if not configured
+        import('@sentry/nextjs').then((Sentry) => {
+          Sentry.captureException(error, {
+            contexts: {
+              react: {
+                componentStack: errorInfo.componentStack,
+              },
+            },
+          });
+        }).catch(() => {
+          // Silently fail if Sentry isn't available
+        });
+      }
+    } catch (sentryError) {
+      // Silently fail if Sentry isn't available
+    }
 
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {

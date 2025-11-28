@@ -29,9 +29,9 @@ const nextConfig = {
   // Compression
   compress: true,
 
-  // Experimental features for performance
+  // Enable instrumentation hook
   experimental: {
-    optimizeCss: true,
+    instrumentationHook: true,
   },
 
   async headers() {

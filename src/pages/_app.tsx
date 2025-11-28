@@ -28,21 +28,24 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
         trackPageView(url);
       }
       
-      // Track performance with Sentry
+      // Track performance with Sentry (if available)
       if (typeof window !== 'undefined' && window.performance && process.env.NEXT_PUBLIC_SENTRY_DSN) {
-        const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-        if (navigation) {
-          const Sentry = require('@sentry/nextjs');
-          Sentry.addBreadcrumb({
-            category: 'navigation',
-            message: `Page loaded: ${url}`,
-            level: 'info',
-            data: {
-              url,
-              loadTime: navigation.loadEventEnd - navigation.fetchStart,
-              domContentLoaded: navigation.domContentLoadedEventEnd - navigation.fetchStart,
-            },
-          });
+        try {
+          const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+          if (navigation && typeof window !== 'undefined' && (window as any).Sentry) {
+            (window as any).Sentry.addBreadcrumb({
+              category: 'navigation',
+              message: `Page loaded: ${url}`,
+              level: 'info',
+              data: {
+                url,
+                loadTime: navigation.loadEventEnd - navigation.fetchStart,
+                domContentLoaded: navigation.domContentLoadedEventEnd - navigation.fetchStart,
+              },
+            });
+          }
+        } catch (error) {
+          // Silently fail if Sentry isn't available
         }
       }
     };
