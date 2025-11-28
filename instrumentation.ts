@@ -4,7 +4,7 @@
  * This file is used to initialize Sentry for server-side and edge runtime.
  * It runs once when the server starts.
  * 
- * Note: Client-side Sentry is initialized in sentry.client.config.ts
+ * Note: Client-side Sentry is initialized in instrumentation-client.ts
  */
 
 export async function register() {

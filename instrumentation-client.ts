@@ -9,7 +9,11 @@
 
 import * as Sentry from "@sentry/nextjs";
 
-Sentry.init({
+// Prevent double initialization
+if (typeof window !== 'undefined' && !(window as any).__SENTRY_INITIALIZED__) {
+  (window as any).__SENTRY_INITIALIZED__ = true;
+
+  Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
   // Adjust this value in production, or use tracesSampler for greater control
@@ -62,5 +66,6 @@ Sentry.init({
 
     return event;
   },
-});
+  });
+}
 
