@@ -51,11 +51,10 @@ export const createOrderConfirmationEmail = (data: OrderConfirmationData): Email
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #8B4513; color: white; padding: 20px; text-align: center; }
-        .content { background-color: #f9f9f9; padding: 30px; }
+        .header { background-color: #3a2618; color: white; padding: 20px; text-align: center; }
+        .content { background-color: #f9f5f0; padding: 30px; }
         .order-details { background-color: white; padding: 20px; margin: 20px 0; border-radius: 5px; }
         .item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
-        .total { font-weight: bold; font-size: 18px; color: #8B4513; }
         .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
         .button { display: inline-block; background-color: #8B4513; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 10px 0; }
       </style>
@@ -63,18 +62,17 @@ export const createOrderConfirmationEmail = (data: OrderConfirmationData): Email
     <body>
       <div class="container">
         <div class="header">
-          <h1>☕ Vendetta Roasting</h1>
+          <h1>Vendetta Roasting</h1>
           <h2>Order Confirmation</h2>
         </div>
         
         <div class="content">
-          <h3>Thank you for your order, ${customerName}!</h3>
-          <p>We've received your order and will begin processing it shortly. Here are your order details:</p>
+          <h3>Hello ${customerName}!</h3>
+          <p>Thank you for your order! We've received your order and will begin processing it shortly.</p>
           
           <div class="order-details">
-            <h4>Order Information</h4>
+            <h4>Order Details</h4>
             <p><strong>Order ID:</strong> ${orderId}</p>
-            <p><strong>Order Date:</strong> ${new Date().toLocaleDateString()}</p>
             <p><strong>Estimated Delivery:</strong> ${estimatedDelivery}</p>
             
             <h4>Items Ordered</h4>
@@ -85,24 +83,25 @@ export const createOrderConfirmationEmail = (data: OrderConfirmationData): Email
               </div>
             `).join('')}
             
-            <div class="item total">
-              <span>Total</span>
-              <span>$${orderTotal.toFixed(2)}</span>
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #eee;">
+              <div class="item">
+                <strong>Total:</strong>
+                <strong>$${orderTotal.toFixed(2)}</strong>
+              </div>
             </div>
-            
-            <h4>Shipping Address</h4>
-            <p>
-              ${shippingAddress.street}<br>
-              ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.zipCode}<br>
-              ${shippingAddress.country}
-            </p>
           </div>
           
-          <p>We'll send you a tracking number once your order ships. If you have any questions, please don't hesitate to contact us.</p>
+          <div class="order-details">
+            <h4>Shipping Address</h4>
+            <p>${shippingAddress.street}<br>
+            ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.zipCode}<br>
+            ${shippingAddress.country}</p>
+          </div>
+          
+          <p>We'll send you another email when your order ships with tracking information.</p>
           
           <div style="text-align: center;">
-            <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/orders/${orderId}" class="button">Track Your Order</a>
-            <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/shop" class="button">Continue Shopping</a>
+            <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/orders/${orderId}" class="button">View Order Details</a>
           </div>
         </div>
         
@@ -113,19 +112,20 @@ export const createOrderConfirmationEmail = (data: OrderConfirmationData): Email
       </div>
     </body>
     </html>
-  `
+  `;
 
   const text = `
     Order Confirmation - Vendetta Roasting
     
-    Thank you for your order, ${customerName}!
+    Hello ${customerName}!
+    
+    Thank you for your order! We've received your order and will begin processing it shortly.
     
     Order ID: ${orderId}
-    Order Date: ${new Date().toLocaleDateString()}
     Estimated Delivery: ${estimatedDelivery}
     
     Items Ordered:
-    ${items.map(item => `- ${item.name} × ${item.quantity} = $${(item.price * item.quantity).toFixed(2)}`).join('\n')}
+    ${items.map(item => `- ${item.name} × ${item.quantity} - $${(item.price * item.quantity).toFixed(2)}`).join('\n')}
     
     Total: $${orderTotal.toFixed(2)}
     
@@ -134,32 +134,31 @@ export const createOrderConfirmationEmail = (data: OrderConfirmationData): Email
     ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.zipCode}
     ${shippingAddress.country}
     
-    Track your order: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/orders/${orderId}
-    Continue shopping: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/shop
+    We'll send you another email when your order ships with tracking information.
     
-    Thank you for choosing Vendetta Roasting!
-  `
+    View your order: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/orders/${orderId}
+  `;
 
   return {
     to: customerEmail,
     from: FROM_EMAIL,
-    replyTo: ADMIN_EMAIL,
-    subject: `Order Confirmation #${orderId} - Vendetta Roasting`,
+    subject: `Order Confirmation - Order #${orderId}`,
     html,
     text
-  }
-}
+  };
+};
 
-// Email template for contact form submission (to admin)
+// Email template for contact form submission
 export interface ContactFormData {
-  name: string
-  email: string
-  subject: string
-  message: string
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
 }
 
 export const createContactFormEmail = (data: ContactFormData): EmailData => {
-  const { name, email, subject, message } = data
+  const { name, email, subject, message } = data;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
 
   const html = `
     <!DOCTYPE html>
@@ -171,79 +170,66 @@ export const createContactFormEmail = (data: ContactFormData): EmailData => {
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #8B4513; color: white; padding: 20px; text-align: center; }
-        .content { background-color: #f9f9f9; padding: 30px; }
-        .field { margin-bottom: 20px; }
-        .label { font-weight: bold; color: #8B4513; }
-        .value { margin-top: 5px; padding: 10px; background-color: white; border-radius: 5px; }
-        .message { white-space: pre-wrap; }
+        .header { background-color: #3a2618; color: white; padding: 20px; text-align: center; }
+        .content { background-color: #f9f5f0; padding: 30px; }
+        .message-box { background-color: white; padding: 20px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #3a2618; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1>☕ Vendetta Roasting</h1>
-          <h2>New Contact Form Submission</h2>
+          <h1>New Contact Form Submission</h1>
         </div>
         
         <div class="content">
-          <div class="field">
-            <div class="label">Name:</div>
-            <div class="value">${name}</div>
+          <p><strong>From:</strong> ${name} (${email})</p>
+          <p><strong>Subject:</strong> ${subject}</p>
+          
+          <div class="message-box">
+            <p><strong>Message:</strong></p>
+            <p>${message.replace(/\n/g, '<br>')}</p>
           </div>
           
-          <div class="field">
-            <div class="label">Email:</div>
-            <div class="value"><a href="mailto:${email}">${email}</a></div>
-          </div>
-          
-          <div class="field">
-            <div class="label">Subject:</div>
-            <div class="value">${subject}</div>
-          </div>
-          
-          <div class="field">
-            <div class="label">Message:</div>
-            <div class="value message">${message}</div>
-          </div>
-          
-          <p style="margin-top: 30px;">
-            <a href="mailto:${email}" style="background-color: #8B4513; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
-              Reply to ${name}
-            </a>
+          <p style="margin-top: 20px;">
+            <strong>Reply to:</strong> <a href="mailto:${email}">${email}</a>
           </p>
+        </div>
+        
+        <div class="footer">
+          <p>Vendetta Roasting - Contact Form</p>
         </div>
       </div>
     </body>
     </html>
-  `
+  `;
 
   const text = `
     New Contact Form Submission - Vendetta Roasting
     
-    Name: ${name}
-    Email: ${email}
+    From: ${name} (${email})
     Subject: ${subject}
     
     Message:
     ${message}
     
     Reply to: ${email}
-  `
+  `;
 
   return {
     to: ADMIN_EMAIL,
-    from: FROM_EMAIL,
+    from: fromEmail,
     replyTo: email,
-    subject: `New Contact Form: ${subject}`,
+    subject: `Contact Form: ${subject}`,
     html,
     text
-  }
-}
+  };
+};
 
-// Email template for contact form auto-reply (to customer)
-export const createContactFormAutoReply = (data: ContactFormData): EmailData => {
-  const { name, email, subject } = data
+// Email template for contact form auto-reply
+export const createContactFormAutoReply = (data: { name: string; email: string }): EmailData => {
+  const { name, email } = data;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
 
   const html = `
     <!DOCTYPE html>
@@ -255,29 +241,24 @@ export const createContactFormAutoReply = (data: ContactFormData): EmailData => 
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #8B4513; color: white; padding: 20px; text-align: center; }
-        .content { background-color: #f9f9f9; padding: 30px; }
+        .header { background-color: #3a2618; color: white; padding: 20px; text-align: center; }
+        .content { background-color: #f9f5f0; padding: 30px; }
         .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1>☕ Vendetta Roasting</h1>
+          <h1>Vendetta Roasting</h1>
           <h2>Thank You for Contacting Us</h2>
         </div>
         
         <div class="content">
-          <p>Hi ${name},</p>
-          
-          <p>Thank you for reaching out to us! We've received your message regarding "${subject}" and will get back to you as soon as possible.</p>
-          
-          <p>We typically respond within 24-48 hours during business days.</p>
-          
-          <p>If you have any urgent questions, please feel free to call us at (206) 555-1234.</p>
-          
-          <p>Best regards,<br>
-          The Vendetta Roasting Team</p>
+          <h3>Hello ${name}!</h3>
+          <p>Thank you for reaching out to us. We've received your message and will get back to you as soon as possible.</p>
+          <p>Our team typically responds within 24-48 hours during business days.</p>
+          <p>If you have any urgent questions, please feel free to call us directly.</p>
+          <p>Best regards,<br>The Vendetta Roasting Team</p>
         </div>
         
         <div class="footer">
@@ -287,45 +268,54 @@ export const createContactFormAutoReply = (data: ContactFormData): EmailData => 
       </div>
     </body>
     </html>
-  `
+  `;
 
   const text = `
     Thank You for Contacting Us - Vendetta Roasting
     
-    Hi ${name},
+    Hello ${name}!
     
-    Thank you for reaching out to us! We've received your message regarding "${subject}" and will get back to you as soon as possible.
+    Thank you for reaching out to us. We've received your message and will get back to you as soon as possible.
     
-    We typically respond within 24-48 hours during business days.
+    Our team typically responds within 24-48 hours during business days.
     
-    If you have any urgent questions, please feel free to call us at (206) 555-1234.
+    If you have any urgent questions, please feel free to call us directly.
     
     Best regards,
     The Vendetta Roasting Team
-  `
+  `;
 
   return {
     to: email,
-    from: FROM_EMAIL,
-    subject: `Thank You for Contacting Vendetta Roasting`,
+    from: fromEmail,
+    subject: 'Thank You for Contacting Vendetta Roasting',
     html,
     text
-  }
-}
+  };
+};
 
-// Email template for wholesale application (to admin)
+// Email template for wholesale application
 export interface WholesaleApplicationData {
-  businessName: string
-  contactName: string
-  email: string
-  phone: string
-  businessAddress: string
-  businessType: string
-  message: string
+  businessName: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  website?: string;
+  taxId?: string;
+  expectedVolume?: string;
+  additionalInfo?: string;
 }
 
 export const createWholesaleApplicationEmail = (data: WholesaleApplicationData): EmailData => {
-  const { businessName, contactName, email, phone, businessAddress, businessType, message } = data
+  const { businessName, contactName, email, phone, address, website, taxId, expectedVolume, additionalInfo } = data;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
 
   const html = `
     <!DOCTYPE html>
@@ -337,69 +327,57 @@ export const createWholesaleApplicationEmail = (data: WholesaleApplicationData):
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #8B4513; color: white; padding: 20px; text-align: center; }
-        .content { background-color: #f9f9f9; padding: 30px; }
-        .field { margin-bottom: 20px; }
-        .label { font-weight: bold; color: #8B4513; }
-        .value { margin-top: 5px; padding: 10px; background-color: white; border-radius: 5px; }
-        .message { white-space: pre-wrap; }
+        .header { background-color: #3a2618; color: white; padding: 20px; text-align: center; }
+        .content { background-color: #f9f5f0; padding: 30px; }
+        .info-box { background-color: white; padding: 20px; margin: 20px 0; border-radius: 5px; }
+        .info-row { padding: 8px 0; border-bottom: 1px solid #eee; }
+        .info-row:last-child { border-bottom: none; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1>☕ Vendetta Roasting</h1>
-          <h2>New Wholesale Application</h2>
+          <h1>New Wholesale Application</h1>
         </div>
         
         <div class="content">
-          <div class="field">
-            <div class="label">Business Name:</div>
-            <div class="value">${businessName}</div>
+          <div class="info-box">
+            <div class="info-row"><strong>Business Name:</strong> ${businessName}</div>
+            <div class="info-row"><strong>Contact Name:</strong> ${contactName}</div>
+            <div class="info-row"><strong>Email:</strong> <a href="mailto:${email}">${email}</a></div>
+            <div class="info-row"><strong>Phone:</strong> ${phone}</div>
+            ${website ? `<div class="info-row"><strong>Website:</strong> <a href="${website}" target="_blank">${website}</a></div>` : ''}
+            ${taxId ? `<div class="info-row"><strong>Tax ID:</strong> ${taxId}</div>` : ''}
+            ${expectedVolume ? `<div class="info-row"><strong>Expected Volume:</strong> ${expectedVolume}</div>` : ''}
           </div>
           
-          <div class="field">
-            <div class="label">Contact Name:</div>
-            <div class="value">${contactName}</div>
+          <div class="info-box">
+            <h4>Business Address</h4>
+            <p>${address.street}<br>
+            ${address.city}, ${address.state} ${address.zipCode}<br>
+            ${address.country}</p>
           </div>
           
-          <div class="field">
-            <div class="label">Email:</div>
-            <div class="value"><a href="mailto:${email}">${email}</a></div>
-          </div>
-          
-          <div class="field">
-            <div class="label">Phone:</div>
-            <div class="value"><a href="tel:${phone}">${phone}</a></div>
-          </div>
-          
-          <div class="field">
-            <div class="label">Business Type:</div>
-            <div class="value">${businessType}</div>
-          </div>
-          
-          <div class="field">
-            <div class="label">Business Address:</div>
-            <div class="value">${businessAddress}</div>
-          </div>
-          
-          ${message ? `
-          <div class="field">
-            <div class="label">Additional Information:</div>
-            <div class="value message">${message}</div>
-          </div>
+          ${additionalInfo ? `
+            <div class="info-box">
+              <h4>Additional Information</h4>
+              <p>${additionalInfo.replace(/\n/g, '<br>')}</p>
+            </div>
           ` : ''}
           
-          <p style="margin-top: 30px;">
-            <a href="mailto:${email}" style="background-color: #8B4513; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
-              Contact ${contactName}
-            </a>
+          <p style="margin-top: 20px;">
+            <strong>Reply to:</strong> <a href="mailto:${email}">${email}</a> | <a href="tel:${phone}">${phone}</a>
           </p>
+        </div>
+        
+        <div class="footer">
+          <p>Vendetta Roasting - Wholesale Application</p>
         </div>
       </div>
     </body>
     </html>
-  `
+  `;
 
   const text = `
     New Wholesale Application - Vendetta Roasting
@@ -408,26 +386,34 @@ export const createWholesaleApplicationEmail = (data: WholesaleApplicationData):
     Contact Name: ${contactName}
     Email: ${email}
     Phone: ${phone}
-    Business Type: ${businessType}
-    Business Address: ${businessAddress}
-    ${message ? `\nAdditional Information:\n${message}` : ''}
+    ${website ? `Website: ${website}` : ''}
+    ${taxId ? `Tax ID: ${taxId}` : ''}
+    ${expectedVolume ? `Expected Volume: ${expectedVolume}` : ''}
     
-    Reply to: ${email}
-  `
+    Business Address:
+    ${address.street}
+    ${address.city}, ${address.state} ${address.zipCode}
+    ${address.country}
+    
+    ${additionalInfo ? `\nAdditional Information:\n${additionalInfo}` : ''}
+    
+    Reply to: ${email} | ${phone}
+  `;
 
   return {
     to: ADMIN_EMAIL,
-    from: FROM_EMAIL,
+    from: fromEmail,
     replyTo: email,
     subject: `New Wholesale Application: ${businessName}`,
     html,
     text
-  }
-}
+  };
+};
 
-// Email template for wholesale application confirmation (to applicant)
-export const createWholesaleApplicationConfirmation = (data: WholesaleApplicationData): EmailData => {
-  const { businessName, contactName, email } = data
+// Email template for wholesale application confirmation
+export const createWholesaleApplicationConfirmation = (data: { businessName: string; contactName: string; email: string }): EmailData => {
+  const { businessName, contactName, email } = data;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
 
   const html = `
     <!DOCTYPE html>
@@ -439,29 +425,25 @@ export const createWholesaleApplicationConfirmation = (data: WholesaleApplicatio
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #8B4513; color: white; padding: 20px; text-align: center; }
-        .content { background-color: #f9f9f9; padding: 30px; }
+        .header { background-color: #3a2618; color: white; padding: 20px; text-align: center; }
+        .content { background-color: #f9f5f0; padding: 30px; }
         .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1>☕ Vendetta Roasting</h1>
+          <h1>Vendetta Roasting</h1>
           <h2>Wholesale Application Received</h2>
         </div>
         
         <div class="content">
-          <p>Hi ${contactName},</p>
-          
-          <p>Thank you for your interest in becoming a wholesale partner with Vendetta Roasting!</p>
-          
-          <p>We've received your application for <strong>${businessName}</strong> and our team will review it within 2-3 business days.</p>
-          
-          <p>We'll contact you at ${email} once we've reviewed your application. If you have any questions in the meantime, please don't hesitate to reach out.</p>
-          
-          <p>Best regards,<br>
-          The Vendetta Roasting Team</p>
+          <h3>Hello ${contactName}!</h3>
+          <p>Thank you for your interest in becoming a wholesale partner with <strong>${businessName}</strong>.</p>
+          <p>We've received your wholesale application and our team will review it carefully. We typically respond within 3-5 business days.</p>
+          <p>If we need any additional information, we'll reach out to you at ${email}.</p>
+          <p>We appreciate your interest in partnering with Vendetta Roasting!</p>
+          <p>Best regards,<br>The Vendetta Roasting Team</p>
         </div>
         
         <div class="footer">
@@ -471,156 +453,33 @@ export const createWholesaleApplicationConfirmation = (data: WholesaleApplicatio
       </div>
     </body>
     </html>
-  `
+  `;
 
   const text = `
     Wholesale Application Received - Vendetta Roasting
     
-    Hi ${contactName},
+    Hello ${contactName}!
     
-    Thank you for your interest in becoming a wholesale partner with Vendetta Roasting!
+    Thank you for your interest in becoming a wholesale partner with ${businessName}.
     
-    We've received your application for ${businessName} and our team will review it within 2-3 business days.
+    We've received your wholesale application and our team will review it carefully. We typically respond within 3-5 business days.
     
-    We'll contact you at ${email} once we've reviewed your application. If you have any questions in the meantime, please don't hesitate to reach out.
+    If we need any additional information, we'll reach out to you at ${email}.
+    
+    We appreciate your interest in partnering with Vendetta Roasting!
     
     Best regards,
     The Vendetta Roasting Team
-  `
+  `;
 
   return {
     to: email,
-    from: FROM_EMAIL,
-    subject: `Wholesale Application Received - Vendetta Roasting`,
-    html,
-    text
-  }
-}
-
-// Send email using Resend
-export const sendEmail = async (emailData: EmailData): Promise<boolean> => {
-  try {
-    // If no API key is set, fall back to console logging (for development)
-    if (!process.env.RESEND_API_KEY) {
-      console.warn('⚠️ RESEND_API_KEY not set. Email will not be sent.')
-      console.log('📧 EMAIL (SIMULATED):')
-      console.log('To:', emailData.to)
-      console.log('Subject:', emailData.subject)
-      console.log('HTML Preview:', emailData.html.substring(0, 200) + '...')
-      return true // Return true so the app doesn't break
-    }
-
-    const result = await resend.emails.send({
-      from: emailData.from || FROM_EMAIL,
-      to: Array.isArray(emailData.to) ? emailData.to : [emailData.to],
-      subject: emailData.subject,
-      html: emailData.html,
-      text: emailData.text || emailData.html.replace(/<[^>]*>/g, ''), // Strip HTML for text version
-      replyTo: emailData.replyTo,
-    })
-
-    if (result.error) {
-      console.error('Resend API error:', result.error)
-      return false
-    }
-
-    console.log('✅ Email sent successfully:', result.data?.id)
-    return true
-  } catch (error) {
-    console.error('Email sending failed:', error)
-    return false
-  }
-}
-
-// Email template for low stock alert (to admin)
-export interface LowStockAlertData {
-  products: Array<{
-    name: string;
-    sku: string;
-    currentInventory: number;
-    threshold: number;
-  }>;
-}
-
-export const createLowStockAlertEmail = (data: LowStockAlertData): EmailData => {
-  const { products } = data;
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
-  const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
-
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Low Stock Alert - Vendetta Roasting</title>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #ff6b6b; color: white; padding: 20px; text-align: center; }
-        .content { background-color: #f9f9f9; padding: 30px; }
-        .product { background-color: white; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #ff6b6b; }
-        .product-name { font-weight: bold; color: #8B4513; }
-        .inventory { color: #ff6b6b; font-weight: bold; }
-        .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
-        .button { display: inline-block; background-color: #8B4513; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 10px 0; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>⚠️ Low Stock Alert</h1>
-          <h2>Vendetta Roasting</h2>
-        </div>
-        
-        <div class="content">
-          <p>The following products are running low on inventory:</p>
-          
-          ${products.map(product => `
-            <div class="product">
-              <div class="product-name">${product.name}</div>
-              <div>SKU: ${product.sku}</div>
-              <div class="inventory">Current Stock: ${product.currentInventory} (Threshold: ${product.threshold})</div>
-            </div>
-          `).join('')}
-          
-          <p style="margin-top: 30px;">
-            <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/admin/products" class="button">
-              View Products in Admin
-            </a>
-          </p>
-        </div>
-        
-        <div class="footer">
-          <p>Vendetta Roasting - Premium Coffee Roasters</p>
-          <p>This is an automated alert. Please review and restock as needed.</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-
-  const text = `
-    Low Stock Alert - Vendetta Roasting
-    
-    The following products are running low on inventory:
-    
-    ${products.map(product => `
-    ${product.name} (SKU: ${product.sku})
-    Current Stock: ${product.currentInventory} (Threshold: ${product.threshold})
-    `).join('\n')}
-    
-    View products in admin: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/admin/products
-  `;
-
-  return {
-    to: adminEmail,
     from: fromEmail,
-    subject: `Low Stock Alert: ${products.length} Product${products.length > 1 ? 's' : ''} Need Restocking`,
+    subject: 'Wholesale Application Received - Vendetta Roasting',
     html,
     text
-  }
-}
+  };
+};
 
 // Email template for order shipped notification
 export interface OrderShippedData {
@@ -657,11 +516,10 @@ export const createOrderShippedEmail = (data: OrderShippedData): EmailData => {
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #8B4513; color: white; padding: 20px; text-align: center; }
+        .header { background-color: #2196F3; color: white; padding: 20px; text-align: center; }
         .content { background-color: #f9f9f9; padding: 30px; }
         .order-details { background-color: white; padding: 20px; margin: 20px 0; border-radius: 5px; }
-        .tracking-box { background-color: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin: 20px 0; border-radius: 5px; }
-        .tracking-number { font-size: 18px; font-weight: bold; color: #2e7d32; margin: 10px 0; }
+        .tracking-box { background-color: #e3f2fd; border-left: 4px solid #2196F3; padding: 15px; margin: 20px 0; border-radius: 5px; }
         .item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
         .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
         .button { display: inline-block; background-color: #8B4513; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 10px 0; }
@@ -675,21 +533,15 @@ export const createOrderShippedEmail = (data: OrderShippedData): EmailData => {
         </div>
         
         <div class="content">
-          <h3>Great news, ${customerName}!</h3>
-          <p>Your order <strong>#${orderNumber}</strong> has been shipped and is on its way to you.</p>
+          <h3>Hello ${customerName}!</h3>
+          <p>Great news! Your order <strong>#${orderNumber}</strong> has been shipped and is on its way to you.</p>
           
           ${trackingNumber ? `
             <div class="tracking-box">
-              <h4 style="margin-top: 0; color: #2e7d32;">📦 Tracking Information</h4>
-              <div class="tracking-number">${trackingNumber}</div>
-              ${trackingUrl ? `<p><a href="${trackingUrl}" style="color: #8B4513; text-decoration: none;">Track Your Package →</a></p>` : ''}
-              <p style="margin-bottom: 0;"><strong>Estimated Delivery:</strong> ${estimatedDelivery}</p>
+              <p style="margin: 0 0 10px 0;"><strong>Tracking Number:</strong> ${trackingNumber}</p>
+              ${trackingUrl ? `<p style="margin: 0;"><a href="${trackingUrl}" style="color: #2196F3; text-decoration: none;">Track Your Package →</a></p>` : ''}
             </div>
-          ` : `
-            <div class="tracking-box">
-              <p><strong>Estimated Delivery:</strong> ${estimatedDelivery}</p>
-            </div>
-          `}
+          ` : ''}
           
           <div class="order-details">
             <h4>Items Shipped</h4>
@@ -698,16 +550,18 @@ export const createOrderShippedEmail = (data: OrderShippedData): EmailData => {
                 <span>${item.name} × ${item.quantity}</span>
               </div>
             `).join('')}
-            
-            <h4 style="margin-top: 20px;">Shipping Address</h4>
-            <p>
-              ${shippingAddress.street}<br>
-              ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.zipCode}<br>
-              ${shippingAddress.country}
-            </p>
           </div>
           
-          <p>You'll receive another email when your order is delivered. If you have any questions, please don't hesitate to contact us.</p>
+          <div class="order-details">
+            <h4>Shipping Address</h4>
+            <p>${shippingAddress.street}<br>
+            ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.zipCode}<br>
+            ${shippingAddress.country}</p>
+          </div>
+          
+          <p><strong>Estimated Delivery:</strong> ${estimatedDelivery}</p>
+          
+          <p>You can track your order using the tracking information above. If you have any questions, please don't hesitate to reach out.</p>
           
           <div style="text-align: center;">
             <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/orders/${orderNumber}" class="button">View Order Details</a>
@@ -726,12 +580,11 @@ export const createOrderShippedEmail = (data: OrderShippedData): EmailData => {
   const text = `
     Your Order Has Shipped - Vendetta Roasting
     
-    Great news, ${customerName}!
+    Hello ${customerName}!
     
-    Your order #${orderNumber} has been shipped and is on its way to you.
+    Great news! Your order #${orderNumber} has been shipped and is on its way to you.
     
-    ${trackingNumber ? `Tracking Number: ${trackingNumber}\n${trackingUrl ? `Track Your Package: ${trackingUrl}\n` : ''}` : ''}
-    Estimated Delivery: ${estimatedDelivery}
+    ${trackingNumber ? `Tracking Number: ${trackingNumber}${trackingUrl ? `\nTrack Your Package: ${trackingUrl}` : ''}` : ''}
     
     Items Shipped:
     ${items.map(item => `- ${item.name} × ${item.quantity}`).join('\n')}
@@ -741,9 +594,11 @@ export const createOrderShippedEmail = (data: OrderShippedData): EmailData => {
     ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.zipCode}
     ${shippingAddress.country}
     
-    View order details: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/orders/${orderNumber}
+    Estimated Delivery: ${estimatedDelivery}
     
-    Thank you for choosing Vendetta Roasting!
+    You can track your order using the tracking information above. If you have any questions, please don't hesitate to reach out.
+    
+    View your order: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/orders/${orderNumber}
   `;
 
   return {
@@ -849,10 +704,8 @@ export const createOrderDeliveredEmail = (data: OrderDeliveredData): EmailData =
     
     We'd love to hear about your experience. Consider leaving a review to help other coffee lovers discover great products!
     
-    View order details: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/orders/${orderNumber}
+    View your order: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/orders/${orderNumber}
     Shop again: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/shop
-    
-    Thank you for choosing Vendetta Roasting!
   `;
 
   return {
@@ -863,3 +716,167 @@ export const createOrderDeliveredEmail = (data: OrderDeliveredData): EmailData =
     text
   };
 };
+
+// Email template for review request
+export interface ReviewRequestData {
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  items: Array<{
+    name: string;
+    productSlug: string;
+    productId: string;
+    quantity: number;
+  }>;
+  deliveredDate: string;
+}
+
+export const createReviewRequestEmail = (data: ReviewRequestData): EmailData => {
+  const { orderNumber, customerName, customerEmail, items, deliveredDate } = data;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+  const siteUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
+  // Create product review links
+  const productLinks = items.map(item => {
+    const reviewUrl = `${siteUrl}/shop/${item.productSlug}`;
+    return {
+      name: item.name,
+      url: reviewUrl,
+      quantity: item.quantity
+    };
+  });
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>We'd Love Your Feedback - Vendetta Roasting</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #3a2618; color: white; padding: 30px 20px; text-align: center; }
+        .content { background-color: #f9f5f0; padding: 30px; }
+        .review-box { background-color: white; padding: 25px; margin: 20px 0; border-radius: 8px; border: 2px solid #f0e6d9; }
+        .product-item { padding: 15px; margin: 10px 0; background-color: #f9f5f0; border-radius: 5px; border-left: 4px solid #3a2618; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+        .button { display: inline-block; background-color: #3a2618; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; margin: 10px 5px; font-weight: 600; }
+        .button-secondary { background-color: #6b4f3d; }
+        .stars { color: #ffc107; font-size: 24px; margin: 10px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 style="margin: 0; font-size: 28px;">⭐ Vendetta Roasting</h1>
+          <h2 style="margin: 10px 0 0 0; font-weight: normal;">We'd Love Your Feedback!</h2>
+        </div>
+        
+        <div class="content">
+          <h3 style="color: #3a2618; margin-top: 0;">Hello ${customerName}!</h3>
+          
+          <p>Thank you for your recent order <strong>#${orderNumber}</strong>! We hope you're enjoying your coffee.</p>
+          
+          <div class="review-box">
+            <p style="margin-top: 0; font-size: 18px; color: #3a2618;"><strong>Your opinion matters to us!</strong></p>
+            <p>We'd be incredibly grateful if you could take a moment to share your experience with the products you received. Your review helps other coffee lovers discover great products and helps us continue to improve.</p>
+            
+            <div class="stars">⭐⭐⭐⭐⭐</div>
+            
+            <p style="margin-bottom: 0;"><strong>Products from your order:</strong></p>
+          </div>
+          
+          ${productLinks.map((product, index) => `
+            <div class="product-item">
+              <p style="margin: 0 0 10px 0; font-weight: 600; color: #3a2618;">${product.name}</p>
+              <p style="margin: 0; font-size: 14px; color: #666;">Quantity: ${product.quantity}</p>
+              <div style="margin-top: 12px;">
+                <a href="${product.url}" class="button" style="font-size: 14px; padding: 10px 20px;">Leave a Review →</a>
+              </div>
+            </div>
+          `).join('')}
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #f0e6d9;">
+            <p style="color: #666; font-size: 14px;">Thank you for being a valued customer!</p>
+            <a href="${siteUrl}/orders/${orderNumber}" class="button button-secondary" style="margin-right: 10px;">View Order</a>
+            <a href="${siteUrl}/shop" class="button button-secondary">Shop Again</a>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p style="margin: 5px 0;"><strong>Vendetta Roasting</strong> - Premium Coffee Roasters</p>
+          <p style="margin: 5px 0; font-size: 12px;">Delivered on: ${deliveredDate}</p>
+          <p style="margin: 5px 0; font-size: 12px;">This is an automated message. Please do not reply to this email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const text = `
+    We'd Love Your Feedback - Vendetta Roasting
+    
+    Hello ${customerName}!
+    
+    Thank you for your recent order #${orderNumber}! We hope you're enjoying your coffee.
+    
+    Your opinion matters to us!
+    
+    We'd be incredibly grateful if you could take a moment to share your experience with the products you received. Your review helps other coffee lovers discover great products and helps us continue to improve.
+    
+    Products from your order:
+    ${productLinks.map((product, index) => `
+    ${index + 1}. ${product.name} (Quantity: ${product.quantity})
+       Leave a review: ${product.url}
+    `).join('\n')}
+    
+    Thank you for being a valued customer!
+    
+    View your order: ${siteUrl}/orders/${orderNumber}
+    Shop again: ${siteUrl}/shop
+    
+    Delivered on: ${deliveredDate}
+    
+    Vendetta Roasting - Premium Coffee Roasters
+    This is an automated message. Please do not reply to this email.
+  `;
+
+  return {
+    to: customerEmail,
+    from: fromEmail,
+    subject: `⭐ We'd Love Your Feedback on Order #${orderNumber}`,
+    html,
+    text
+  };
+};
+
+// Send email function
+export async function sendEmail(emailData: EmailData): Promise<void> {
+  try {
+    if (!process.env.RESEND_API_KEY) {
+      console.warn('RESEND_API_KEY not configured. Email not sent.');
+      console.log('Would send email:', emailData);
+      return;
+    }
+
+    const result = await resend.emails.send({
+      from: emailData.from || FROM_EMAIL,
+      to: Array.isArray(emailData.to) ? emailData.to : [emailData.to],
+      subject: emailData.subject,
+      html: emailData.html,
+      text: emailData.text,
+      reply_to: emailData.replyTo,
+    });
+
+    if (result.error) {
+      console.error('Error sending email:', result.error);
+      throw new Error(`Failed to send email: ${result.error.message}`);
+    }
+
+    console.log('✅ Email sent successfully:', result.data);
+  } catch (error) {
+    console.error('Error in sendEmail:', error);
+    throw error;
+  }
+}

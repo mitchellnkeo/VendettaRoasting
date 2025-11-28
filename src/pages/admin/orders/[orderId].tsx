@@ -42,6 +42,7 @@ export default function AdminOrderDetail() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [sendingReviewRequest, setSendingReviewRequest] = useState(false);
   const [statusUpdate, setStatusUpdate] = useState({
     status: '',
     payment_status: '',
@@ -153,6 +154,38 @@ export default function AdminOrderDetail() {
       alert('Error updating order');
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleSendReviewRequest = async () => {
+    if (!orderId || !order) return;
+    
+    if (!confirm('Send a review request email to the customer?')) {
+      return;
+    }
+
+    setSendingReviewRequest(true);
+
+    try {
+      const decodedId = decodeURIComponent(orderId as string);
+      
+      const response = await fetch('/api/admin/orders/send-review-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: decodedId }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        alert('Review request email sent successfully!');
+      } else {
+        alert(data.message || 'Error sending review request email');
+      }
+    } catch (error) {
+      console.error('Error sending review request:', error);
+      alert('Error sending review request email');
+    } finally {
+      setSendingReviewRequest(false);
     }
   };
 
@@ -365,6 +398,38 @@ export default function AdminOrderDetail() {
                   </button>
                 </form>
               </div>
+
+              {/* Send Review Request Button */}
+              {order.status === 'delivered' && order.customer_email && (
+                <div className="bg-white shadow rounded-lg p-6">
+                  <h2 className="text-lg font-semibold text-coffee-dark mb-4">Review Request</h2>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Send a review request email to the customer to encourage them to leave feedback on their purchased products.
+                  </p>
+                  <button
+                    onClick={handleSendReviewRequest}
+                    disabled={sendingReviewRequest}
+                    className="w-full bg-coffee-light hover:bg-coffee text-cream-light py-2 px-4 rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    {sendingReviewRequest ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                        </svg>
+                        Send Review Request Email
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
 
               {/* Order Info */}
               <div className="bg-white shadow rounded-lg p-6">
