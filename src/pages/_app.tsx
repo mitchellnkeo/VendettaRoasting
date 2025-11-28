@@ -7,6 +7,7 @@ import { CartProvider } from '@/lib/cart/CartContext'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 import { initGA, trackPageView } from '@/lib/analytics'
+import ErrorBoundary from '@/components/ErrorBoundary'
 
 export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const router = useRouter();
@@ -48,12 +49,14 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
   );
   
   return (
-    <SessionProvider session={session}>
-      <AuthProvider>
-        <CartProvider>
-          <PageContent />
-        </CartProvider>
-      </AuthProvider>
-    </SessionProvider>
+    <ErrorBoundary>
+      <SessionProvider session={session}>
+        <AuthProvider>
+          <CartProvider>
+            <PageContent />
+          </CartProvider>
+        </AuthProvider>
+      </SessionProvider>
+    </ErrorBoundary>
   )
 }

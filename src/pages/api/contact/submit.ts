@@ -88,6 +88,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   } catch (error) {
     console.error('Error processing contact form:', error);
+    
+    // Report to Sentry
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+      const Sentry = require('@sentry/nextjs');
+      Sentry.captureException(error, {
+        tags: {
+          api: 'contact/submit',
+        },
+        extra: {
+          formData: {
+            name: req.body.name,
+            email: req.body.email,
+            subject: req.body.subject,
+          },
+        },
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Internal server error. Please try again later.'

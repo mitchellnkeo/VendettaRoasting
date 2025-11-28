@@ -17,6 +17,7 @@
   "dependencies": {
     "@sanity/client": "^7.12.1",
     "@sanity/image-url": "^1.2.0",
+    "@sentry/nextjs": "^10.27.0",
     "@stripe/react-stripe-js": "^5.2.0",
     "@stripe/stripe-js": "^8.1.0",
     "@types/formidable": "^3.4.6",
