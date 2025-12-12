@@ -61,9 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Send auto-reply to customer
     const customerEmail = createContactFormAutoReply({ 
       name: sanitizedName, 
-      email: sanitizedEmail, 
-      subject: sanitizedSubject, 
-      message: sanitizedMessage 
+      email: sanitizedEmail
     });
     const customerEmailSent = await sendEmail(customerEmail);
 
