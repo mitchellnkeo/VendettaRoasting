@@ -35,7 +35,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       origin,
       roastLevel,
       flavorNotes,
-      images,
+      images[]{
+        _key,
+        _type,
+        alt,
+        isPrimary,
+        asset->{
+          _id,
+          _type,
+          url,
+          metadata {
+            dimensions
+          }
+        }
+      },
       isActive,
       isFeatured,
       inventoryQuantity,
@@ -56,9 +69,45 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Transform Sanity product to match Product interface
     const primaryImage = product.images?.find((img: any) => img.isPrimary) || product.images?.[0];
-    const imageUrl = primaryImage 
-      ? urlFor(primaryImage).width(800).height(800).url() 
-      : '/images/placeholder-coffee.jpg';
+    let imageUrl = '/images/placeholder-coffee.jpg';
+    
+    if (primaryImage) {
+      try {
+        // If asset is resolved (has url), use it directly, otherwise use urlFor()
+        if (primaryImage.asset?.url) {
+          // Asset is resolved, use the URL directly (but we still want to resize it)
+          const urlBuilder = urlFor(primaryImage);
+          imageUrl = urlBuilder.width(800).height(800).url();
+        } else if (primaryImage.asset?._id) {
+          // Asset is resolved but doesn't have URL, use urlFor() with the image object
+          const urlBuilder = urlFor(primaryImage);
+          imageUrl = urlBuilder.width(800).height(800).url();
+        } else {
+          // Asset is just a reference, urlFor() should handle it
+          const urlBuilder = urlFor(primaryImage);
+          imageUrl = urlBuilder.width(800).height(800).url();
+        }
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Primary image data:', JSON.stringify(primaryImage, null, 2));
+          console.log('Generated image URL:', imageUrl);
+        }
+        
+        // Validate URL
+        if (!imageUrl || imageUrl === '' || imageUrl.includes('undefined')) {
+          console.error('Invalid image URL generated:', imageUrl);
+          imageUrl = '/images/placeholder-coffee.jpg';
+        }
+      } catch (error) {
+        console.error('Error generating image URL:', error);
+        console.error('Image object:', primaryImage);
+        imageUrl = '/images/placeholder-coffee.jpg';
+      }
+    } else {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('No primary image found. Product images:', product.images);
+      }
+    }
 
     const transformedProduct = {
       id: product._id,
@@ -84,12 +133,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       created_at: product._createdAt,
       updated_at: product._updatedAt,
       // Include full image array
-      images: product.images?.map((img: any) => ({
-        id: img._key,
-        image_url: urlFor(img).width(1200).height(1200).url(),
-        alt_text: img.alt || product.name,
-        is_primary: img.isPrimary || false,
-      })) || [],
+      images: product.images?.map((img: any) => {
+        let imageUrl = '/images/placeholder-coffee.jpg';
+        if (img) {
+          try {
+            const urlBuilder = urlFor(img);
+            imageUrl = urlBuilder.width(1200).height(1200).url();
+            
+            // Validate URL
+            if (!imageUrl || imageUrl === '' || imageUrl.includes('undefined')) {
+              console.error('Invalid image URL generated for image:', img._key, imageUrl);
+              imageUrl = '/images/placeholder-coffee.jpg';
+            }
+          } catch (error) {
+            console.error('Error generating image URL for image:', img._key, error);
+            if (process.env.NODE_ENV === 'development') {
+              console.error('Image object:', img);
+            }
+            imageUrl = '/images/placeholder-coffee.jpg';
+          }
+        }
+        return {
+          id: img._key,
+          image_url: imageUrl,
+          alt_text: img.alt || product.name,
+          is_primary: img.isPrimary || false,
+        };
+      }) || [],
     };
 
     // Set cache headers for better performance

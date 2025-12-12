@@ -247,6 +247,8 @@ export default function ProductDetail() {
               <div className="rounded-2xl overflow-hidden shadow-warm-lg">
                 <ProductImage 
                   productId={product.id}
+                  images={(product as any).images || []}
+                  fallbackImageUrl={product.image_url}
                   className="h-96 lg:h-[500px] w-full object-cover"
                   alt={product.name}
                   priority={true}

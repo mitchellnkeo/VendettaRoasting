@@ -9,18 +9,43 @@ interface ProductImageProps {
   priority?: boolean
 }
 
+interface ProductImagePropsWithFallback extends ProductImageProps {
+  fallbackImageUrl?: string;
+}
+
 export default function ProductImage({ 
   productId, 
   images = [], 
   alt = 'Product image',
   className = '',
-  priority = false 
-}: ProductImageProps) {
+  priority = false,
+  fallbackImageUrl
+}: ProductImagePropsWithFallback) {
   // Find the primary image or use the first image
   const primaryImage = images.find(img => img.is_primary) || images[0]
   
-  // If no images, use a placeholder
+  // If no images, check for fallback URL or use placeholder
   if (!primaryImage) {
+    // If we have a fallback URL, use it
+    if (fallbackImageUrl) {
+      return (
+        <div className={`relative overflow-hidden ${className}`}>
+          <Image
+            src={fallbackImageUrl}
+            alt={alt}
+            fill
+            className="object-cover"
+            priority={priority}
+            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+            quality={85}
+            loading={priority ? 'eager' : 'lazy'}
+            unoptimized={fallbackImageUrl.includes('blob.vercel-storage.com')}
+          />
+        </div>
+      )
+    }
+    
+    // No images and no fallback - show placeholder
     return (
       <div className={`bg-gray-200 flex items-center justify-center ${className}`}>
         <div className="text-center text-gray-400">

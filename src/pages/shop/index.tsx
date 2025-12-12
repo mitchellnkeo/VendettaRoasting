@@ -216,6 +216,8 @@ export default function Shop() {
                       <div className="relative overflow-hidden">
                         <ProductImage 
                           productId={product.id}
+                          images={(product as any).images || []}
+                          fallbackImageUrl={product.image_url}
                           className="h-64 cursor-pointer group-hover:scale-110 transition-transform duration-500"
                           alt={product.name}
                         />
