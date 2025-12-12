@@ -53,41 +53,46 @@ export function clearUser() {
 
 /**
  * Start a transaction for performance monitoring
+ * @deprecated This function is deprecated. startTransaction was removed in Sentry v7+
+ * Use Sentry.startSpan() or Sentry.startInactiveSpan() directly instead.
+ * This function is kept for backwards compatibility but returns a no-op.
  */
 export function startTransaction(name: string, op: string) {
-  return Sentry.startTransaction({
-    name,
-    op,
-  });
+  // Return a no-op object that matches the old transaction interface
+  // This prevents TypeScript errors while maintaining backwards compatibility
+  return {
+    setStatus: (_status: string) => {},
+    finish: () => {},
+    setTag: (_key: string, _value: string) => {},
+    setData: (_key: string, _value: any) => {},
+    startChild: (_options: any) => ({
+      setStatus: () => {},
+      finish: () => {},
+      setTag: () => {},
+      setData: () => {},
+    }),
+  };
 }
 
 /**
  * Wrap an async function with Sentry error tracking
+ * Note: This function wraps the function with error tracking but doesn't use transactions
+ * (which were deprecated in Sentry v7+)
  */
 export function withSentry<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   context?: string
 ): T {
   return (async (...args: any[]) => {
-    const transaction = Sentry.startTransaction({
-      name: context || fn.name || 'function',
-      op: 'function',
-    });
-
     try {
-      const result = await fn(...args);
-      transaction.setStatus('ok');
-      return result;
+      return await fn(...args);
     } catch (error) {
-      transaction.setStatus('internal_error');
       Sentry.captureException(error as Error, {
         tags: {
           function: context || fn.name || 'unknown',
         },
       });
       throw error;
-    } finally {
-      transaction.finish();
     }
   }) as T;
 }
