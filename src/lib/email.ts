@@ -89,12 +89,12 @@ export const createOrderConfirmationEmail = (data: OrderConfirmationData): Email
                 <strong>$${orderTotal.toFixed(2)}</strong>
               </div>
             </div>
-          </div>
-          
+            </div>
+            
           <div class="order-details">
             <h4>Shipping Address</h4>
             <p>${shippingAddress.street}<br>
-            ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.zipCode}<br>
+              ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.zipCode}<br>
             ${shippingAddress.country}</p>
           </div>
           
@@ -851,13 +851,126 @@ export const createReviewRequestEmail = (data: ReviewRequestData): EmailData => 
   };
 };
 
+export interface LowStockAlertData {
+  products: Array<{
+    name: string;
+    sku: string;
+    currentInventory: number;
+    threshold: number;
+  }>;
+}
+
+export const createLowStockAlertEmail = (data: LowStockAlertData): EmailData => {
+  const { products } = data;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+  const adminEmail = process.env.ADMIN_EMAIL || fromEmail;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Low Stock Alert - Vendetta Roasting</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #d32f2f; color: white; padding: 30px 20px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .content { background-color: #f9f9f9; padding: 30px 20px; }
+        .alert-box { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }
+        .product-table { width: 100%; border-collapse: collapse; margin: 20px 0; background-color: white; }
+        .product-table th, .product-table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        .product-table th { background-color: #3a2618; color: white; }
+        .product-table tr:hover { background-color: #f5f5f5; }
+        .inventory-low { color: #d32f2f; font-weight: bold; }
+        .button { display: inline-block; padding: 12px 24px; background-color: #3a2618; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>⚠️ Low Stock Alert</h1>
+        </div>
+        <div class="content">
+          <div class="alert-box">
+            <strong>Action Required:</strong> ${products.length} product${products.length > 1 ? 's' : ''} ${products.length > 1 ? 'are' : 'is'} running low on inventory.
+          </div>
+          
+          <h2>Products with Low Stock:</h2>
+          <table class="product-table">
+            <thead>
+              <tr>
+                <th>Product Name</th>
+                <th>SKU</th>
+                <th>Current Inventory</th>
+                <th>Threshold</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${products.map(product => `
+                <tr>
+                  <td>${product.name}</td>
+                  <td>${product.sku}</td>
+                  <td class="inventory-low">${product.currentInventory}</td>
+                  <td>${product.threshold}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          
+          <p>Please review your inventory and restock these products as needed.</p>
+          
+          <div style="text-align: center;">
+            <a href="${siteUrl}/admin/products" class="button">Manage Inventory</a>
+          </div>
+        </div>
+        <div class="footer">
+          <p>Vendetta Roasting - Inventory Management System</p>
+          <p>This is an automated alert. Please do not reply to this email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const text = `
+    Low Stock Alert - Vendetta Roasting
+
+    Action Required: ${products.length} product${products.length > 1 ? 's' : ''} ${products.length > 1 ? 'are' : 'is'} running low on inventory.
+
+    Products with Low Stock:
+    ${products.map(product => `
+      - ${product.name} (SKU: ${product.sku})
+        Current Inventory: ${product.currentInventory}
+        Threshold: ${product.threshold}
+    `).join('')}
+
+    Please review your inventory and restock these products as needed.
+
+    Manage Inventory: ${siteUrl}/admin/products
+
+    This is an automated alert. Please do not reply to this email.
+  `;
+
+  return {
+    to: adminEmail,
+    from: fromEmail,
+    subject: `⚠️ Low Stock Alert: ${products.length} Product${products.length > 1 ? 's' : ''} Need Restocking`,
+    html,
+    text
+  };
+};
+
 // Send email function
-export async function sendEmail(emailData: EmailData): Promise<void> {
+export async function sendEmail(emailData: EmailData): Promise<boolean> {
   try {
     if (!process.env.RESEND_API_KEY) {
       console.warn('RESEND_API_KEY not configured. Email not sent.');
       console.log('Would send email:', emailData);
-      return;
+      return false;
     }
 
     const result = await resend.emails.send({
@@ -871,12 +984,13 @@ export async function sendEmail(emailData: EmailData): Promise<void> {
 
     if (result.error) {
       console.error('Error sending email:', result.error);
-      throw new Error(`Failed to send email: ${result.error.message}`);
+      return false;
     }
 
     console.log('✅ Email sent successfully:', result.data);
+    return true;
   } catch (error) {
     console.error('Error in sendEmail:', error);
-    throw error;
+    return false;
   }
 }
