@@ -866,7 +866,7 @@ export async function sendEmail(emailData: EmailData): Promise<void> {
       subject: emailData.subject,
       html: emailData.html,
       text: emailData.text,
-      reply_to: emailData.replyTo,
+      replyTo: emailData.replyTo,
     });
 
     if (result.error) {
