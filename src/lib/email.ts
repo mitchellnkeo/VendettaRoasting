@@ -300,13 +300,9 @@ export interface WholesaleApplicationData {
   contactName: string;
   email: string;
   phone: string;
-  address: {
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
-  };
+  businessAddress: string;
+  businessType?: string;
+  message?: string;
   website?: string;
   taxId?: string;
   expectedVolume?: string;
@@ -314,7 +310,7 @@ export interface WholesaleApplicationData {
 }
 
 export const createWholesaleApplicationEmail = (data: WholesaleApplicationData): EmailData => {
-  const { businessName, contactName, email, phone, address, website, taxId, expectedVolume, additionalInfo } = data;
+  const { businessName, contactName, email, phone, businessAddress, businessType, message, website, taxId, expectedVolume, additionalInfo } = data;
   const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
 
   const html = `
@@ -347,6 +343,7 @@ export const createWholesaleApplicationEmail = (data: WholesaleApplicationData):
             <div class="info-row"><strong>Contact Name:</strong> ${contactName}</div>
             <div class="info-row"><strong>Email:</strong> <a href="mailto:${email}">${email}</a></div>
             <div class="info-row"><strong>Phone:</strong> ${phone}</div>
+            ${businessType ? `<div class="info-row"><strong>Business Type:</strong> ${businessType}</div>` : ''}
             ${website ? `<div class="info-row"><strong>Website:</strong> <a href="${website}" target="_blank">${website}</a></div>` : ''}
             ${taxId ? `<div class="info-row"><strong>Tax ID:</strong> ${taxId}</div>` : ''}
             ${expectedVolume ? `<div class="info-row"><strong>Expected Volume:</strong> ${expectedVolume}</div>` : ''}
@@ -354,10 +351,15 @@ export const createWholesaleApplicationEmail = (data: WholesaleApplicationData):
           
           <div class="info-box">
             <h4>Business Address</h4>
-            <p>${address.street}<br>
-            ${address.city}, ${address.state} ${address.zipCode}<br>
-            ${address.country}</p>
+            <p>${businessAddress.replace(/\n/g, '<br>')}</p>
           </div>
+          
+          ${message ? `
+            <div class="info-box">
+              <h4>Message</h4>
+              <p>${message.replace(/\n/g, '<br>')}</p>
+            </div>
+          ` : ''}
           
           ${additionalInfo ? `
             <div class="info-box">
@@ -386,15 +388,15 @@ export const createWholesaleApplicationEmail = (data: WholesaleApplicationData):
     Contact Name: ${contactName}
     Email: ${email}
     Phone: ${phone}
+    ${businessType ? `Business Type: ${businessType}` : ''}
     ${website ? `Website: ${website}` : ''}
     ${taxId ? `Tax ID: ${taxId}` : ''}
     ${expectedVolume ? `Expected Volume: ${expectedVolume}` : ''}
     
     Business Address:
-    ${address.street}
-    ${address.city}, ${address.state} ${address.zipCode}
-    ${address.country}
+    ${businessAddress}
     
+    ${message ? `\nMessage:\n${message}` : ''}
     ${additionalInfo ? `\nAdditional Information:\n${additionalInfo}` : ''}
     
     Reply to: ${email} | ${phone}
@@ -411,7 +413,7 @@ export const createWholesaleApplicationEmail = (data: WholesaleApplicationData):
 };
 
 // Email template for wholesale application confirmation
-export const createWholesaleApplicationConfirmation = (data: { businessName: string; contactName: string; email: string }): EmailData => {
+export const createWholesaleApplicationConfirmation = (data: { businessName: string; contactName: string; email: string; phone?: string; businessAddress?: string; businessType?: string; message?: string }): EmailData => {
   const { businessName, contactName, email } = data;
   const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
 
