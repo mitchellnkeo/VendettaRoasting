@@ -48,7 +48,7 @@ export default function ProductDetail() {
 
   // Track view item when product loads
   useEffect(() => {
-    if (product && typeof window !== 'undefined' && window.gtag) {
+    if (product && typeof window !== 'undefined' && typeof window.gtag === 'function') {
       trackViewItem({
         item_id: product.id,
         item_name: product.name,
@@ -117,7 +117,7 @@ export default function ProductDetail() {
       }
 
       // Track add to cart event
-      if (typeof window !== 'undefined' && window.gtag) {
+      if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
         trackAddToCart({
           item_id: product.id,
           item_name: product.name,

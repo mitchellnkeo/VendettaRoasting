@@ -99,7 +99,7 @@ export function reportPerformance(metrics: {
   entries?: PerformanceEntry[];
 }) {
   // Report to Google Analytics if available
-  if (typeof window !== 'undefined' && window.gtag) {
+  if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
     window.gtag('event', 'web_vitals', {
       event_category: 'Web Vitals',
       event_label: metrics.name,

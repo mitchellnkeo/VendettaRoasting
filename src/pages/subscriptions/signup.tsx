@@ -121,7 +121,7 @@ export default function SubscriptionSignup() {
 
       if (result.success) {
         // Track subscription signup
-        if (typeof window !== 'undefined' && window.gtag) {
+        if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
           const { trackSubscriptionSignup } = require('../../lib/analytics');
           const selectedPlanData = plans.find((p: SubscriptionPlan) => p.id === selectedPlan);
           trackSubscriptionSignup({

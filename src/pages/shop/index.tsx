@@ -101,7 +101,7 @@ export default function Shop() {
       });
 
       // Track add to cart event
-      if (typeof window !== 'undefined' && window.gtag) {
+      if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
         trackAddToCart({
           item_id: product.id,
           item_name: product.name,
