@@ -64,7 +64,7 @@ export default function Checkout() {
 
   // Track begin checkout when component mounts with items
   useEffect(() => {
-    if (items.length > 0 && typeof window !== 'undefined' && window.gtag) {
+    if (items.length > 0 && typeof window !== 'undefined' && typeof window.gtag === 'function') {
       trackBeginCheckout({
         value: totalPrice,
         currency: 'USD',
@@ -119,7 +119,7 @@ export default function Checkout() {
         setOrderId(result.data.orderId)
         
         // Track purchase conversion
-        if (typeof window !== 'undefined' && window.gtag) {
+        if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
           trackPurchase({
             transaction_id: result.data.orderId,
             value: totalPrice,
