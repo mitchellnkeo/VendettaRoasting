@@ -6,6 +6,7 @@ import AddressForm from '../components/AddressForm'
 import SavedAddresses from '../components/SavedAddresses'
 import PaymentForm from '../components/PaymentForm'
 import { useState, useEffect } from 'react'
+import { trackBeginCheckout, trackPurchase } from '../lib/analytics'
 
 export default function Checkout() {
   const { state, removeItem, updateQuantity, clearCart } = useCart()
