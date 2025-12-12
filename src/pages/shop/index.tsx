@@ -4,6 +4,7 @@ import { Product, Category } from '../../types/product'
 import ProductImage from '../../components/ProductImage'
 import { useCart } from '../../lib/cart/CartContext'
 import SEO from '../../components/SEO'
+import { trackAddToCart } from '../../lib/analytics'
 
 export default function Shop() {
   const [products, setProducts] = useState<Product[]>([]);

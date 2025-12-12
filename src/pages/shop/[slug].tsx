@@ -9,6 +9,7 @@ import { generateProductSchema, generateBreadcrumbSchema } from '../../lib/struc
 import { urlFor } from '../../lib/sanity'
 import ReviewForm from '../../components/ReviewForm'
 import ReviewsList from '../../components/ReviewsList'
+import { trackViewItem, trackAddToCart } from '../../lib/analytics'
 
 export default function ProductDetail() {
   const router = useRouter()
